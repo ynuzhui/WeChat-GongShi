@@ -1,0 +1,259 @@
+.dashboard-page {
+  padding: 20rpx 22rpx 96rpx;
+}
+
+.month-bar,
+.summary-grid,
+.status-panel,
+.status-item,
+.metric-head,
+.stat-row {
+  display: flex;
+  align-items: center;
+}
+
+.month-bar,
+.status-panel {
+  justify-content: space-between;
+}
+
+.month-bar {
+  gap: 10rpx;
+  margin-bottom: 18rpx;
+  padding: 12rpx;
+  border: 1rpx solid rgba(221, 232, 227, 0.92);
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--app-shadow);
+}
+
+.nav-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 58rpx !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  font-size: 24rpx !important;
+  font-weight: 700 !important;
+}
+
+.day-nav {
+  width: 58rpx !important;
+  padding: 0 !important;
+}
+
+.month-nav {
+  width: 66rpx !important;
+}
+
+.nav-button .t-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-title-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.date-title {
+  display: block;
+  overflow: hidden;
+  color: var(--app-text);
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-grid {
+  align-items: stretch;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.metric {
+  flex: 1;
+  min-width: 0;
+  min-height: 142rpx;
+  padding: 18rpx 16rpx;
+  border: 1rpx solid rgba(221, 232, 227, 0.92);
+  border-radius: 12rpx;
+  border-color: rgba(22, 122, 97, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #edf8f4 100%);
+  box-shadow: var(--app-shadow);
+}
+
+.metric-primary {
+  border-color: rgba(22, 122, 97, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #edf8f4 100%);
+}
+
+.metric-head {
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.metric-label,
+.panel-label {
+  display: block;
+  overflow: hidden;
+  color: var(--app-text-muted);
+  font-size: 22rpx;
+  line-height: 30rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18rpx;
+  color: var(--app-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.metric-value-text {
+  position: relative;
+  z-index: 0;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--app-primary);
+  font-family: inherit;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-input-capture {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 100%;
+  height: 58rpx;
+  padding: 0;
+  color: transparent;
+  background: transparent !important;
+  font-family: inherit;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 58rpx;
+  opacity: 0;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.tool-panel {
+  margin-bottom: 16rpx;
+  padding: 22rpx;
+}
+
+.status-panel {
+  gap: 18rpx;
+}
+
+.status-item {
+  flex: 1;
+  min-width: 0;
+  gap: 14rpx;
+}
+
+.status-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+  background: var(--app-primary-soft);
+}
+
+.status-copy {
+  min-width: 0;
+}
+
+.status-diff {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10rpx;
+  width: 172rpx;
+}
+
+.status-value {
+  display: block;
+  overflow: hidden;
+  margin-top: 6rpx;
+  color: var(--app-text);
+  font-size: 31rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-tag {
+  padding: 5rpx 16rpx !important;
+}
+
+.stat-row {
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 86rpx;
+  border-radius: 10rpx;
+  background: var(--app-card-soft);
+  color: var(--app-text-muted);
+  font-size: 22rpx;
+  line-height: 1.2;
+}
+
+.stat-item text:first-child,
+.stat-item text:last-child {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-item text:last-child {
+  margin-top: 8rpx;
+  color: var(--app-text);
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.is-plus {
+  color: var(--app-primary);
+}
+
+.is-minus {
+  color: var(--app-danger);
+}

@@ -1,0 +1,90 @@
+<view class="page dashboard-page">
+  <view class="month-bar">
+    <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goPrevMonth">
+      <t-icon name="chevron-left-double" size="34rpx" color="#167a61"></t-icon>
+    </van-button>
+    <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goPrevDay">
+      <t-icon name="chevron-left" size="34rpx" color="#167a61"></t-icon>
+    </van-button>
+    <view class="date-title-wrap">
+      <text class="date-title">{{selectedDate}}</text>
+    </view>
+    <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goNextDay">
+      <t-icon name="chevron-right" size="34rpx" color="#167a61"></t-icon>
+    </van-button>
+    <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goNextMonth">
+      <t-icon name="chevron-right-double" size="34rpx" color="#167a61"></t-icon>
+    </van-button>
+  </view>
+
+  <view class="summary-grid">
+    <view class="metric metric-primary">
+      <view class="metric-head">
+        <van-icon name="balance-list-o" size="34rpx" color="#167a61"></van-icon>
+        <text class="metric-label">上月结余</text>
+      </view>
+      <view class="metric-field-wrap metric-field-editable" bindtap="focusOpeningInput">
+        <text class="metric-value-text">{{openingInput}}h</text>
+        <input
+          class="metric-input-capture"
+          type="text"
+          value="{{openingInput}}"
+          focus="{{isOpeningInputFocused}}"
+          bindfocus="onOpeningFocus"
+          bindinput="onOpeningInput"
+          bindblur="onOpeningBlur"
+        />
+      </view>
+    </view>
+    <view class="metric metric-primary">
+      <view class="metric-head">
+        <van-icon name="bar-chart-o" size="34rpx" color="#167a61"></van-icon>
+        <text class="metric-label">本月结算</text>
+      </view>
+      <view class="metric-field-wrap">
+        <text class="metric-value-text">{{monthDeltaText}}h</text>
+      </view>
+    </view>
+    <view class="metric metric-primary">
+      <view class="metric-head">
+        <van-icon name="points" size="34rpx" color="#167a61"></van-icon>
+        <text class="metric-label">本月结余</text>
+      </view>
+      <view class="metric-field-wrap">
+        <text class="metric-value-text">{{closingBalanceText}}h</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tool-panel status-panel">
+    <view class="status-item">
+      <view class="status-icon">
+        <van-icon name="clock-o" size="34rpx" color="#167a61"></van-icon>
+      </view>
+      <view class="status-copy">
+        <text class="panel-label">上班时间</text>
+        <text class="status-value">{{dateStatusTime}}</text>
+      </view>
+    </view>
+    <view class="status-item status-diff">
+      <text class="panel-label">差额</text>
+      <van-tag custom-class="status-tag" type="{{dateStatusTheme}}" plain round size="large">{{dateStatusDiff}}</van-tag>
+    </view>
+  </view>
+
+  <view class="tool-panel">
+    <view class="panel-title-row">
+      <view>
+        <text class="panel-title">本月摘要</text>
+      </view>
+      <van-icon name="notes-o" size="36rpx" color="#167a61"></van-icon>
+    </view>
+    <view class="stat-row">
+      <view class="stat-item"><text>上班</text><text>{{stats.workCount}}</text></view>
+      <view class="stat-item"><text>本休</text><text>{{stats.restCount}}</text></view>
+      <view class="stat-item"><text>调休</text><text>{{stats.leaveCount}}</text></view>
+      <view class="stat-item"><text>未记</text><text>{{stats.missingCount}}</text></view>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,287 @@
+.profile-page {
+  height: 100vh;
+  overflow: hidden;
+  padding: 22rpx 22rpx 96rpx;
+}
+
+.tool-panel {
+  margin-bottom: 16rpx;
+  padding: 22rpx;
+}
+
+.select-box,
+.time-field,
+.range-field {
+  border: 1rpx solid var(--app-border);
+  border-radius: 12rpx;
+  background: var(--app-card-soft) !important;
+}
+
+.select-box {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center;
+  margin-top: 18rpx;
+  min-height: 104rpx !important;
+  padding: 16rpx 24rpx !important;
+  color: var(--app-primary);
+  font-size: 29rpx;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.select-box.is-active {
+  border-color: rgba(22, 122, 97, 0.42);
+  background: var(--app-primary-soft) !important;
+}
+
+.select-box text {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-form {
+  margin-top: 16rpx;
+}
+
+.time-grid,
+.range-row,
+.action-row,
+.preset-actions,
+.range-actions,
+.switch-line,
+.export-head,
+.preview-row {
+  display: flex;
+  align-items: center;
+}
+
+.export-head,
+.switch-line {
+  justify-content: space-between;
+}
+
+.time-grid,
+.range-row,
+.action-row,
+.preset-actions,
+.range-actions {
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.time-grid picker,
+.range-row picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.time-field,
+.range-field {
+  min-height: 104rpx;
+  padding: 14rpx 8rpx !important;
+}
+
+.select-box,
+.time-field,
+.range-field {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.range-field {
+  white-space: nowrap;
+}
+
+.range-field .van-cell__title,
+.range-field .van-cell__value {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.range-field .van-cell__title {
+  flex: none;
+  width: 74rpx;
+}
+
+.range-field .van-cell__value {
+  flex: 1;
+  justify-content: flex-end;
+  overflow: hidden;
+  font-size: 24rpx;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switch-line {
+  gap: 18rpx;
+  margin-top: 16rpx;
+  padding: 18rpx;
+  border-radius: 12rpx;
+  background: var(--app-card-soft);
+}
+
+.switch-title,
+.switch-note {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.switch-title {
+  color: var(--app-text);
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.switch-note {
+  margin-top: 6rpx;
+  color: var(--app-text-muted);
+  font-size: 22rpx;
+}
+
+.preset-actions van-button,
+.action-row van-button,
+.range-actions van-button {
+  flex: 1;
+  min-width: 0;
+}
+
+.preset-actions {
+  justify-content: center;
+  width: 100%;
+}
+
+.preset-actions van-button {
+  flex: 0 0 176rpx;
+}
+
+.action-row,
+.range-actions {
+  justify-content: center;
+}
+
+.action-row van-button {
+  display: flex;
+  justify-content: center;
+}
+
+.preset-action-button {
+  min-width: 160rpx !important;
+  height: 68rpx !important;
+  font-weight: 800 !important;
+}
+
+.export-action-button {
+  min-width: 0 !important;
+  height: 70rpx !important;
+  padding: 0 16rpx !important;
+  font-size: 23rpx !important;
+  font-weight: 800 !important;
+}
+
+.full-button {
+  height: 72rpx !important;
+  margin-top: 16rpx !important;
+  font-weight: 800 !important;
+}
+
+.add-button {
+  width: 100% !important;
+}
+
+.empty-wrap {
+  margin-top: 18rpx;
+  border: 1rpx dashed var(--app-border-strong);
+  border-radius: 12rpx;
+  background: var(--app-card-soft);
+}
+
+.export-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.export-text {
+  width: 100%;
+  height: 268rpx;
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
+  border: 1rpx solid var(--app-border);
+  border-radius: 12rpx;
+  background: var(--app-card-soft);
+  color: var(--app-text);
+  font-size: 25rpx;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+.export-text::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  color: transparent;
+}
+
+.export-line,
+.export-empty {
+  display: block;
+  min-height: 39rpx;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.export-empty {
+  color: var(--app-text-soft);
+}
+
+.export-actions {
+  align-items: stretch;
+}
+
+.import-preview {
+  margin-top: 16rpx;
+  padding: 18rpx;
+  border-radius: 12rpx;
+  background: var(--app-card-soft);
+}
+
+.preview-title,
+.preview-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-title {
+  color: var(--app-text);
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.preview-line {
+  margin-top: 10rpx;
+  color: var(--app-text-muted);
+  font-size: 22rpx;
+}
+
+.preview-row {
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 12rpx;
+}
+
+.report-canvas {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}

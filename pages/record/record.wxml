@@ -1,0 +1,96 @@
+<view class="page record-page">
+  <view class="tool-panel">
+    <view class="panel-title-row">
+      <view>
+        <text class="panel-title">填写工时</text>
+      </view>
+      <van-tag type="{{draftStateTheme}}" plain round size="medium">{{draftStateLabel}}</van-tag>
+    </view>
+
+    <view class="date-switch">
+      <van-button custom-class="date-nav" type="primary" plain round icon="arrow-left" bind:click="goPrevDay"></van-button>
+      <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange">
+        <view class="date-line">
+          <van-icon name="calendar-o" size="32rpx" color="#167a61"></van-icon>
+          <text class="date-main">{{selectedDateLabel}}</text>
+        </view>
+      </picker>
+      <van-button custom-class="date-nav" type="primary" plain round icon="arrow" bind:click="goNextDay"></van-button>
+    </view>
+
+    <view class="segments">
+      <button class="segment {{selectedEntry.type === 'work' ? 'is-active' : ''}}" data-type="work" bindtap="onTypeTap">上班</button>
+      <button class="segment {{selectedEntry.type === 'rest' ? 'is-active' : ''}}" data-type="rest" bindtap="onTypeTap">本休</button>
+      <button class="segment {{selectedEntry.type === 'leave' ? 'is-active' : ''}}" data-type="leave" bindtap="onTypeTap">调休</button>
+    </view>
+  </view>
+
+  <view wx:if="{{selectedEntry.type === 'work'}}" class="tool-panel">
+    <view class="panel-title-row">
+      <view>
+        <text class="panel-title">班次</text>
+      </view>
+      <van-icon name="clock-o" size="36rpx" color="#167a61"></van-icon>
+    </view>
+
+    <picker wx:if="{{presets.length}}" mode="selector" range="{{presetOptions}}" value="{{selectedPresetIndex}}" bindchange="onPresetPickerChange">
+      <view class="preset-select {{selectedEntry.presetId ? 'is-active' : ''}}">
+        <text>{{selectedEntry.presetId ? selectedPresetLabel : '点击选择班次'}}</text>
+      </view>
+    </picker>
+
+    <view wx:else class="empty-wrap">
+      <van-empty image="search" description="暂无班次"></van-empty>
+    </view>
+
+    <van-button
+      custom-class="manual-button {{isManualEditorVisible ? 'is-active' : ''}}"
+      block
+      round
+      type="{{isManualEditorVisible ? 'primary' : 'default'}}"
+      plain="{{isManualEditorVisible ? false : true}}"
+      bind:click="useManualMode"
+    >手动填写</van-button>
+  </view>
+
+  <view wx:if="{{selectedEntry.type === 'work' && isManualEditorVisible}}" class="tool-panel">
+    <view class="time-grid">
+      <picker mode="multiSelector" range="{{timePickerRange}}" value="{{startTimePickerValue}}" bindchange="onStartChange">
+        <van-cell custom-class="time-field" title="上班" value="{{selectedEntry.start}}" icon="clock-o" is-link border="{{false}}"></van-cell>
+      </picker>
+      <picker mode="multiSelector" range="{{timePickerRange}}" value="{{endTimePickerValue}}" bindchange="onEndChange">
+        <van-cell custom-class="time-field" title="下班" value="{{selectedEntry.end}}" icon="clock-o" is-link border="{{false}}"></van-cell>
+      </picker>
+    </view>
+
+    <view class="switch-line">
+      <view class="switch-text">
+        <text class="switch-title">扣休0.5h</text>
+      </view>
+      <van-switch checked="{{selectedEntry.deductBreak}}" active-color="#167a61" size="44rpx" bind:change="onDeductBreakChange"></van-switch>
+    </view>
+  </view>
+
+  <view class="tool-panel">
+    <van-field
+      custom-class="note-field"
+      value="{{selectedEntry.note}}"
+      placeholder="备注"
+      clearable
+      border="{{false}}"
+      extra-event-params="{{true}}"
+      bind:input="onNoteInput"
+      bind:blur="onNoteBlur"
+    ></van-field>
+
+    <view class="calc-line {{selectedWarning ? 'is-warning' : ''}}">
+      <van-icon name="{{selectedWarning ? 'warning-o' : 'passed'}}" size="30rpx"></van-icon>
+      <text>{{selectedWarning || selectedSummary}}</text>
+    </view>
+
+    <view class="record-actions">
+      <van-button custom-class="action-button" type="primary" round bind:click="saveDraft">保存</van-button>
+      <van-button custom-class="action-button" type="default" plain round bind:click="clearSelected">清空</van-button>
+    </view>
+  </view>
+</view>
