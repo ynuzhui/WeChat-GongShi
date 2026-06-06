@@ -2,6 +2,8 @@ const time = require('./time')
 const model = require('./model')
 const calc = require('./calc')
 
+const MAX_EXPORT_RANGE_DAYS = 370
+
 function normalizeRange(startDateKey, endDateKey) {
   let start = startDateKey
   let end = endDateKey
@@ -19,10 +21,22 @@ function walkRange(storeInput, startDateKey, endDateKey, visitor) {
   const store = model.normalizeStore(storeInput)
   const range = normalizeRange(startDateKey, endDateKey)
   const lines = []
+  const monthCache = {}
 
-  for (let dateKey = range.start; time.compareKeys(dateKey, range.end) <= 0; dateKey = time.addDays(dateKey, 1)) {
-    const month = model.getMonth(store, time.toMonthKey(dateKey))
-    const entry = month.entries[dateKey]
+  for (
+    let dateKey = range.start, dayCount = 0;
+    time.compareKeys(dateKey, range.end) <= 0 && dayCount < MAX_EXPORT_RANGE_DAYS;
+    dateKey = time.addDays(dateKey, 1), dayCount += 1
+  ) {
+    const monthKey = time.toMonthKey(dateKey)
+    if (!monthCache[monthKey]) {
+      const sourceMonth = store.months[monthKey] || {}
+      monthCache[monthKey] = sourceMonth.entries && typeof sourceMonth.entries === 'object'
+        ? sourceMonth.entries
+        : {}
+    }
+    const entries = monthCache[monthKey]
+    const entry = entries[dateKey]
     if (!entry || !entry.type) {
       continue
     }
@@ -80,6 +94,7 @@ function buildDeltaExportText(storeInput, startDateKey, endDateKey) {
 }
 
 module.exports = {
+  MAX_EXPORT_RANGE_DAYS,
   buildExportLines,
   buildExportText,
   buildDeltaExportLines,

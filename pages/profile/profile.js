@@ -5,6 +5,15 @@ const view = require('../../utils/view')
 const CANVAS_WIDTH = 960
 const REPORT_ROW_HEIGHT = 48
 const REPORT_TABLE_Y = 88
+const BACKUP_FILE_READY_RETRIES = 5
+const BACKUP_FILE_READY_DELAY = 100
+const DEFAULT_PROFILE_TAB = 'report'
+const PROFILE_TABS = [
+  { key: 'report', label: '报表导出', icon: 'description-o' },
+  { key: 'presets', label: '班次管理', icon: 'setting-o' },
+  { key: 'balance', label: '结余设置', icon: 'balance-list-o' },
+  { key: 'backup', label: '备份恢复', icon: 'share-o' }
+]
 
 function createPresetForm() {
   return {
@@ -47,7 +56,7 @@ function getPresetTimePickerValue(form, key) {
 
 function getDevicePixelRatio() {
   try {
-    const info = wx.getSystemInfoSync ? wx.getSystemInfoSync() : null
+    const info = wx.getWindowInfo ? wx.getWindowInfo() : null
     return info && info.pixelRatio ? info.pixelRatio : 1
   } catch (error) {
     return 1
@@ -57,9 +66,14 @@ function getDevicePixelRatio() {
 Page({
   pendingImportStore: null,
   isGeneratingReport: false,
+  isExportingBackup: false,
+  hasLoadedOnce: false,
+  skippedInitialShow: false,
 
   data: {
     store: worktime.createDefaultStore(),
+    activeProfileTab: DEFAULT_PROFILE_TAB,
+    profileTabs: PROFILE_TABS,
     presets: [],
     presetOptions: [],
     presetForm: createPresetForm(),
@@ -74,6 +88,13 @@ Page({
     presetEndTimePickerValue: worktime.getHalfHourTimePickerValue('17:00'),
     currentMonthKey: worktime.toMonthKey(new Date()),
     monthLabel: '',
+    openingBalanceText: '0',
+    monthDeltaText: '0',
+    closingBalanceText: '0',
+    balanceMonthKey: worktime.toMonthKey(new Date()),
+    balanceMonthLabel: '',
+    balanceClosingText: '0',
+    balanceInput: '0',
     monthRows: [],
     ledger: {
       openingBalanceMinutes: 0,
@@ -94,39 +115,114 @@ Page({
   },
 
   onLoad() {
+    this.hasLoadedOnce = true
     const monthKey = worktime.toMonthKey(new Date())
     this.setData({
       currentMonthKey: monthKey,
+      balanceMonthKey: monthKey,
       exportStart: worktime.getDateKey(monthKey, 1),
       exportEnd: worktime.getTodayKey()
     }, () => this.refresh())
   },
 
   onShow() {
+    if (this.hasLoadedOnce && !this.skippedInitialShow) {
+      this.skippedInitialShow = true
+      return
+    }
     this.refresh()
   },
 
   refresh() {
     const store = storage.loadStore()
-    const monthView = worktime.buildMonthView(store, this.data.currentMonthKey)
-    const exportLines = worktime.buildExportLines(store, this.data.exportStart, this.data.exportEnd)
+    const currentMonthKey = this.data.currentMonthKey || worktime.toMonthKey(new Date())
+    const balanceMonthKey = this.data.balanceMonthKey || currentMonthKey
+    const monthView = worktime.buildMonthView(store, currentMonthKey)
+    const balanceLedger = balanceMonthKey === currentMonthKey
+      ? monthView.ledger
+      : worktime.computeLedger(store, balanceMonthKey)
     const selectedPreset = worktime.getPresetById(store, this.data.selectedPresetId)
 
     this.setData({
       store,
+      currentMonthKey,
+      balanceMonthKey,
       presets: store.settings.presets,
       presetOptions: view.buildPresetOptions(store.settings.presets),
       selectedPresetId: selectedPreset ? selectedPreset.id : '',
       selectedPresetIndex: Math.max(0, findPresetIndex(store.settings.presets, this.data.selectedPresetId)),
       selectedPresetLabel: selectedPreset ? worktime.formatPresetOption(selectedPreset) : (this.data.isAddingPreset ? '新增班次' : '选择班次'),
       monthLabel: monthView.monthLabel,
+      openingBalanceText: worktime.formatHours(monthView.ledger.openingBalanceMinutes),
+      monthDeltaText: worktime.formatHours(monthView.ledger.monthDeltaMinutes, true),
+      closingBalanceText: worktime.formatHours(monthView.ledger.closingBalanceMinutes),
+      balanceMonthLabel: worktime.getMonthLabel(balanceMonthKey),
+      balanceClosingText: worktime.formatHours(balanceLedger.closingBalanceMinutes),
+      balanceInput: worktime.formatHours(balanceLedger.closingBalanceMinutes),
       monthRows: view.decorateRows(monthView.rows),
       ledger: monthView.ledger,
-      exportLines,
-      exportText: exportLines.join('\n'),
-      exportDeltaText: worktime.buildDeltaExportText(store, this.data.exportStart, this.data.exportEnd),
       presetStartTimePickerValue: getPresetTimePickerValue(this.data.presetForm, 'start'),
       presetEndTimePickerValue: getPresetTimePickerValue(this.data.presetForm, 'end')
+    })
+  },
+
+  refreshExportText(storeInput) {
+    const store = storeInput || this.data.store
+    const exportLines = worktime.buildExportLines(store, this.data.exportStart, this.data.exportEnd)
+    this.setData({
+      exportLines,
+      exportText: exportLines.join('\n'),
+      exportDeltaText: worktime.buildDeltaExportText(store, this.data.exportStart, this.data.exportEnd)
+    })
+  },
+
+  switchProfileTab(event) {
+    const tab = event && event.currentTarget && event.currentTarget.dataset.tab
+    if (!tab || tab === this.data.activeProfileTab) {
+      return
+    }
+    this.setData({
+      activeProfileTab: tab
+    })
+  },
+
+  onBalanceMonthChange(event) {
+    const monthKey = getEventValue(event)
+    if (!monthKey) {
+      return
+    }
+    const balanceView = worktime.buildMonthView(this.data.store, monthKey)
+    this.setData({
+      balanceMonthKey: monthKey,
+      balanceMonthLabel: balanceView.monthLabel,
+      balanceClosingText: worktime.formatHours(balanceView.ledger.closingBalanceMinutes),
+      balanceInput: worktime.formatHours(balanceView.ledger.closingBalanceMinutes)
+    })
+  },
+
+  onBalanceInput(event) {
+    this.setData({
+      balanceInput: getEventValue(event)
+    })
+  },
+
+  saveOpeningBalanceSetting() {
+    const monthKey = this.data.balanceMonthKey || this.data.currentMonthKey
+    const targetClosingMinutes = worktime.parseHoursToMinutes(this.data.balanceInput)
+    if (targetClosingMinutes === null) {
+      wx.showToast({
+        title: '请输入数字',
+        icon: 'none'
+      })
+      return
+    }
+    const monthDeltaMinutes = worktime.computeLedger(this.data.store, monthKey).monthDeltaMinutes
+    const openingBalanceMinutes = targetClosingMinutes - monthDeltaMinutes
+    const savedStore = storage.saveStore(worktime.setOpeningBalance(this.data.store, monthKey, openingBalanceMinutes))
+    this.refresh()
+    this.refreshExportText(savedStore)
+    wx.showToast({
+      title: '已保存'
     })
   },
 
@@ -223,7 +319,10 @@ Page({
       isAddingPreset: false,
       presetStartTimePickerValue: getPresetTimePickerValue(savedPreset || form, 'start'),
       presetEndTimePickerValue: getPresetTimePickerValue(savedPreset || form, 'end')
-    }, () => this.refresh())
+    }, () => {
+      this.refresh()
+      this.refreshExportText(savedStore)
+    })
     wx.showToast({
       title: '已保存'
     })
@@ -259,7 +358,7 @@ Page({
           return
         }
         const nextStore = worktime.deletePreset(this.data.store, presetId)
-        storage.saveStore(nextStore)
+        const savedStore = storage.saveStore(nextStore)
         this.setData({
           presetForm: createPresetForm(),
           editingPresetId: '',
@@ -269,7 +368,10 @@ Page({
           isAddingPreset: false,
           presetStartTimePickerValue: getPresetTimePickerValue(createPresetForm(), 'start'),
           presetEndTimePickerValue: getPresetTimePickerValue(createPresetForm(), 'end')
-        }, () => this.refresh())
+        }, () => {
+          this.refresh()
+          this.refreshExportText(savedStore)
+        })
       }
     })
   },
@@ -277,13 +379,13 @@ Page({
   onExportStartChange(event) {
     this.setData({
       exportStart: event.detail.value
-    }, () => this.refresh())
+    }, () => this.refreshExportText())
   },
 
   onExportEndChange(event) {
     this.setData({
       exportEnd: event.detail.value
-    }, () => this.refresh())
+    }, () => this.refreshExportText())
   },
 
   useMonthExportRange() {
@@ -292,7 +394,7 @@ Page({
     this.setData({
       exportStart: start,
       exportEnd: end
-    }, () => this.refresh())
+    }, () => this.refreshExportText())
   },
 
   useWeekExportRange() {
@@ -302,7 +404,10 @@ Page({
       currentMonthKey: worktime.toMonthKey(today),
       exportStart: range.start,
       exportEnd: range.end
-    }, () => this.refresh())
+    }, () => {
+      this.refresh()
+      this.refreshExportText()
+    })
   },
 
   copyToClipboard(text) {
@@ -324,11 +429,21 @@ Page({
   },
 
   copyExportText() {
-    this.copyToClipboard(this.data.exportText)
+    const exportLines = worktime.buildExportLines(this.data.store, this.data.exportStart, this.data.exportEnd)
+    const exportText = exportLines.join('\n')
+    this.setData({
+      exportLines,
+      exportText
+    })
+    this.copyToClipboard(exportText)
   },
 
   copyExportDeltaText() {
-    this.copyToClipboard(this.data.exportDeltaText)
+    const exportDeltaText = worktime.buildDeltaExportText(this.data.store, this.data.exportStart, this.data.exportEnd)
+    this.setData({
+      exportDeltaText
+    })
+    this.copyToClipboard(exportDeltaText)
   },
 
   generateReportImage() {
@@ -496,10 +611,64 @@ Page({
     return result ? `${result}${suffix}` : suffix
   },
 
+  waitForBackupFileReady(fileSystem, filePath, callback, attempt) {
+    const currentAttempt = attempt || 0
+    if (!fileSystem || !fileSystem.access) {
+      setTimeout(() => callback(true), BACKUP_FILE_READY_DELAY)
+      return
+    }
+    fileSystem.access({
+      path: filePath,
+      success: () => callback(true),
+      fail: () => {
+        if (currentAttempt >= BACKUP_FILE_READY_RETRIES - 1) {
+          callback(false)
+          return
+        }
+        setTimeout(() => {
+          this.waitForBackupFileReady(fileSystem, filePath, callback, currentAttempt + 1)
+        }, BACKUP_FILE_READY_DELAY)
+      }
+    })
+  },
+
+  finishBackupExport(toastTitle) {
+    this.isExportingBackup = false
+    wx.hideLoading()
+    if (toastTitle) {
+      wx.showToast({
+        title: toastTitle,
+        icon: 'none'
+      })
+    }
+  },
+
+  shareBackupFile(filePath, fileName) {
+    if (!wx.shareFileMessage) {
+      this.finishBackupExport('文件已生成')
+      return
+    }
+    wx.shareFileMessage({
+      filePath,
+      fileName,
+      success: () => this.finishBackupExport(),
+      fail: () => this.finishBackupExport('文件已生成')
+    })
+  },
+
   exportBackupFile() {
+    if (this.isExportingBackup) {
+      return
+    }
+    this.isExportingBackup = true
+    wx.showLoading({
+      title: '正在生成',
+      mask: true
+    })
     const fileName = storage.makeBackupFileName()
     const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`
-    wx.getFileSystemManager().writeFile({
+    const fileSystem = wx.getFileSystemManager()
+    fileSystem.writeFile({
       filePath,
       data: storage.serializeBackup(this.data.store),
       encoding: 'utf8',
@@ -507,35 +676,15 @@ Page({
         this.setData({
           exportFilePath: ''
         })
-        if (wx.shareFileMessage) {
-          wx.shareFileMessage({
-            filePath,
-            fileName,
-            success: () => {
-              wx.showToast({
-                title: '已发送'
-              })
-            },
-            fail: () => {
-              wx.showToast({
-                title: '文件已生成',
-                icon: 'none'
-              })
-            }
-          })
-          return
-        }
-        wx.showToast({
-          title: '文件已生成',
-          icon: 'none'
+        this.waitForBackupFileReady(fileSystem, filePath, (ready) => {
+          if (!ready) {
+            this.finishBackupExport('导出失败')
+            return
+          }
+          this.shareBackupFile(filePath, fileName)
         })
       },
-      fail: () => {
-        wx.showToast({
-          title: '导出失败',
-          icon: 'none'
-        })
-      }
+      fail: () => this.finishBackupExport('导出失败')
     })
   },
 
@@ -611,12 +760,15 @@ Page({
         if (!result.confirm) {
           return
         }
-        storage.saveStore(this.pendingImportStore)
+        const savedStore = storage.saveStore(this.pendingImportStore)
         this.pendingImportStore = null
         this.setData({
           pendingImportPreview: null,
           pendingImportFileName: ''
-        }, () => this.refresh())
+        }, () => {
+          this.refresh()
+          this.refreshExportText(savedStore)
+        })
         wx.showToast({
           title: '导入完成'
         })

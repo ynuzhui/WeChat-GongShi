@@ -14,8 +14,7 @@ function calculateBreakDeduction(entry, start, end, settings) {
   return shouldDeductBreak(start, end, settings) ? settings.breakMinutes : 0
 }
 
-function calculateEntry(entry, settingsInput) {
-  const settings = model.normalizeSettings(settingsInput)
+function calculateEntryWithSettings(entry, settings) {
   if (!entry || !entry.type) {
     return {
       valid: true,
@@ -76,42 +75,64 @@ function calculateEntry(entry, settingsInput) {
   }
 }
 
-function getMonthDelta(store, monthKey) {
-  const normalized = model.normalizeStore(store)
-  const month = model.getMonth(normalized, monthKey)
+function calculateEntry(entry, settingsInput) {
+  return calculateEntryWithSettings(entry, model.normalizeSettings(settingsInput))
+}
+
+function getNormalizedMonth(store, monthKey) {
+  const month = store.months && store.months[monthKey] ? store.months[monthKey] : {}
+  return {
+    openingBalanceMinutes: typeof month.openingBalanceMinutes === 'number' ? month.openingBalanceMinutes : null,
+    entries: month.entries && typeof month.entries === 'object' ? month.entries : {}
+  }
+}
+
+function getMonthDeltaFromStore(store, monthKey) {
+  const month = getNormalizedMonth(store, monthKey)
   return Object.keys(month.entries).reduce((total, dateKey) => {
-    const result = calculateEntry(month.entries[dateKey], normalized.settings)
+    const result = calculateEntryWithSettings(month.entries[dateKey], store.settings)
     return total + (result.valid ? result.diffMinutes : 0)
   }, 0)
 }
 
-function getKnownMonthKeys(store, extraMonthKey) {
-  const normalized = model.normalizeStore(store)
-  const keys = Object.keys(normalized.months || {})
+function getMonthDelta(storeInput, monthKey) {
+  return getMonthDeltaFromStore(model.normalizeStore(storeInput), monthKey)
+}
+
+function getKnownMonthKeysFromStore(store, extraMonthKey) {
+  const keys = Object.keys(store.months || {})
   if (extraMonthKey && keys.indexOf(extraMonthKey) === -1) {
     keys.push(extraMonthKey)
   }
   return keys.sort(time.compareKeys)
 }
 
-function computeLedger(storeInput, targetMonthKey) {
-  const store = model.normalizeStore(storeInput)
-  const keys = getKnownMonthKeys(store, targetMonthKey)
-  let previousClosing = 0
-  let result = {
+function getKnownMonthKeys(storeInput, extraMonthKey) {
+  return getKnownMonthKeysFromStore(model.normalizeStore(storeInput), extraMonthKey)
+}
+
+function createEmptyLedger(targetMonthKey) {
+  return {
     monthKey: targetMonthKey,
     openingBalanceMinutes: 0,
     monthDeltaMinutes: 0,
     closingBalanceMinutes: 0
   }
+}
 
-  keys.forEach((monthKey) => {
+function computeLedgerFromStore(store, targetMonthKey) {
+  const keys = getKnownMonthKeysFromStore(store, targetMonthKey)
+  let previousClosing = 0
+  let result = createEmptyLedger(targetMonthKey)
+
+  for (let index = 0; index < keys.length; index += 1) {
+    const monthKey = keys[index]
     if (time.compareKeys(monthKey, targetMonthKey) > 0) {
-      return
+      break
     }
-    const month = model.getMonth(store, monthKey)
+    const month = getNormalizedMonth(store, monthKey)
     const opening = typeof month.openingBalanceMinutes === 'number' ? month.openingBalanceMinutes : previousClosing
-    const delta = getMonthDelta(store, monthKey)
+    const delta = getMonthDeltaFromStore(store, monthKey)
     const closing = opening + delta
     previousClosing = closing
 
@@ -122,16 +143,78 @@ function computeLedger(storeInput, targetMonthKey) {
         monthDeltaMinutes: delta,
         closingBalanceMinutes: closing
       }
+      break
     }
-  })
+  }
 
   return result
 }
 
-function buildMonthRows(storeInput, monthKey) {
-  const store = model.normalizeStore(storeInput)
-  const month = model.getMonth(store, monthKey)
-  const ledger = computeLedger(store, monthKey)
+function computeLedgersFromStore(store, targetMonthKeys) {
+  const requestedKeys = Array.isArray(targetMonthKeys) ? targetMonthKeys.filter(Boolean) : []
+  const uniqueTargetKeys = []
+  requestedKeys.forEach((monthKey) => {
+    if (uniqueTargetKeys.indexOf(monthKey) === -1) {
+      uniqueTargetKeys.push(monthKey)
+    }
+  })
+  if (!uniqueTargetKeys.length) {
+    return {}
+  }
+
+  const maxTargetKey = uniqueTargetKeys.slice().sort(time.compareKeys).pop()
+  const remaining = uniqueTargetKeys.reduce((result, monthKey) => {
+    result[monthKey] = true
+    return result
+  }, {})
+  const keys = getKnownMonthKeysFromStore(store, maxTargetKey)
+  let previousClosing = 0
+  const ledgers = {}
+
+  for (let index = 0; index < keys.length; index += 1) {
+    const monthKey = keys[index]
+    if (time.compareKeys(monthKey, maxTargetKey) > 0) {
+      break
+    }
+    const month = getNormalizedMonth(store, monthKey)
+    const opening = typeof month.openingBalanceMinutes === 'number' ? month.openingBalanceMinutes : previousClosing
+    const delta = getMonthDeltaFromStore(store, monthKey)
+    const closing = opening + delta
+    previousClosing = closing
+
+    if (remaining[monthKey]) {
+      ledgers[monthKey] = {
+        monthKey,
+        openingBalanceMinutes: opening,
+        monthDeltaMinutes: delta,
+        closingBalanceMinutes: closing
+      }
+      delete remaining[monthKey]
+      if (!Object.keys(remaining).length) {
+        break
+      }
+    }
+  }
+
+  uniqueTargetKeys.forEach((monthKey) => {
+    if (!ledgers[monthKey]) {
+      ledgers[monthKey] = createEmptyLedger(monthKey)
+    }
+  })
+  return ledgers
+}
+
+function computeLedger(storeInput, targetMonthKey) {
+  return computeLedgerFromStore(model.normalizeStore(storeInput), targetMonthKey)
+}
+
+function computeLedgers(storeInput, targetMonthKeys) {
+  return computeLedgersFromStore(model.normalizeStore(storeInput), targetMonthKeys)
+}
+
+function buildMonthRowsFromStore(store, monthKey, ledgerInput) {
+  const month = getNormalizedMonth(store, monthKey)
+  const ledger = ledgerInput || computeLedgerFromStore(store, monthKey)
   const totalDays = time.daysInMonth(monthKey)
   const rows = []
   let runningBalance = ledger.openingBalanceMinutes
@@ -139,7 +222,7 @@ function buildMonthRows(storeInput, monthKey) {
   for (let day = 1; day <= totalDays; day += 1) {
     const dateKey = time.getDateKey(monthKey, day)
     const entry = month.entries[dateKey] || null
-    const calc = calculateEntry(entry, store.settings)
+    const calc = calculateEntryWithSettings(entry, store.settings)
     const hasEntry = !!(entry && entry.type)
     const hasValidEntry = hasEntry && calc.valid
     if (hasValidEntry) {
@@ -164,18 +247,34 @@ function buildMonthRows(storeInput, monthKey) {
   return rows
 }
 
+function buildMonthRows(storeInput, monthKey) {
+  return buildMonthRowsFromStore(model.normalizeStore(storeInput), monthKey)
+}
+
 function buildMonthView(storeInput, monthKey) {
   const store = model.normalizeStore(storeInput)
+  const ledger = computeLedgerFromStore(store, monthKey)
   return {
     monthKey,
     monthLabel: time.getMonthLabel(monthKey),
-    ledger: computeLedger(store, monthKey),
-    rows: buildMonthRows(store, monthKey)
+    ledger,
+    rows: buildMonthRowsFromStore(store, monthKey, ledger)
   }
 }
 
-function buildMonthStats(storeInput, monthKey) {
-  const rows = buildMonthRows(storeInput, monthKey)
+function buildMonthViewWithLedger(storeInput, monthKey, ledgerInput) {
+  const store = model.normalizeStore(storeInput)
+  const ledger = ledgerInput || computeLedgerFromStore(store, monthKey)
+  return {
+    monthKey,
+    monthLabel: time.getMonthLabel(monthKey),
+    ledger,
+    rows: buildMonthRowsFromStore(store, monthKey, ledger)
+  }
+}
+
+function buildRowsStats(rowsInput) {
+  const rows = Array.isArray(rowsInput) ? rowsInput : []
   return rows.reduce((stats, row) => {
     if (!row.hasEntry) {
       stats.missingCount += 1
@@ -200,6 +299,10 @@ function buildMonthStats(storeInput, monthKey) {
   })
 }
 
+function buildMonthStats(storeInput, monthKey) {
+  return buildRowsStats(buildMonthRows(storeInput, monthKey))
+}
+
 module.exports = {
   shouldDeductBreak,
   calculateBreakDeduction,
@@ -207,7 +310,10 @@ module.exports = {
   getMonthDelta,
   getKnownMonthKeys,
   computeLedger,
+  computeLedgers,
   buildMonthRows,
   buildMonthView,
+  buildMonthViewWithLedger,
+  buildRowsStats,
   buildMonthStats
 }

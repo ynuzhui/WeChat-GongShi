@@ -246,6 +246,19 @@ function formatBeijingMinuteStamp(input) {
   ].join('-')
 }
 
+function formatBeijingCompactMinuteStamp(input) {
+  const source = input ? new Date(input) : new Date()
+  const beijingTime = new Date(source.getTime() + 8 * 60 * 60 * 1000)
+  return [
+    pad(beijingTime.getUTCFullYear() % 100),
+    pad(beijingTime.getUTCMonth() + 1),
+    pad(beijingTime.getUTCDate())
+  ].join('') + '-' + [
+    pad(beijingTime.getUTCHours()),
+    pad(beijingTime.getUTCMinutes())
+  ].join('')
+}
+
 module.exports = {
   DEFAULT_ROUNDING_MINUTES,
   WEEKDAY_LABELS,
@@ -278,6 +291,7 @@ module.exports = {
   formatExportTime,
   formatTimeRange,
   formatBeijingMinuteStamp,
+  formatBeijingCompactMinuteStamp,
   roundToStep,
   formatHours,
   parseHoursToMinutes

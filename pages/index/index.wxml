@@ -1,19 +1,19 @@
 <view class="page dashboard-page">
   <view class="month-bar">
     <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goPrevMonth">
-      <t-icon name="chevron-left-double" size="34rpx" color="#167a61"></t-icon>
+      <view class="nav-arrow nav-arrow-left nav-arrow-double"></view>
     </van-button>
     <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goPrevDay">
-      <t-icon name="chevron-left" size="34rpx" color="#167a61"></t-icon>
+      <view class="nav-arrow nav-arrow-left"></view>
     </van-button>
     <view class="date-title-wrap">
       <text class="date-title">{{selectedDate}}</text>
     </view>
     <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goNextDay">
-      <t-icon name="chevron-right" size="34rpx" color="#167a61"></t-icon>
+      <view class="nav-arrow nav-arrow-right"></view>
     </van-button>
     <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goNextMonth">
-      <t-icon name="chevron-right-double" size="34rpx" color="#167a61"></t-icon>
+      <view class="nav-arrow nav-arrow-right nav-arrow-double"></view>
     </van-button>
   </view>
 

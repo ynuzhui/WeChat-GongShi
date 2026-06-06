@@ -44,6 +44,9 @@ function buildDateStatusTheme(row) {
 }
 
 Page({
+  hasLoadedOnce: false,
+  skippedInitialShow: false,
+
   data: {
     store: worktime.createDefaultStore(),
     prevMonthText: String.fromCharCode(60, 60),
@@ -78,10 +81,15 @@ Page({
   },
 
   onLoad() {
+    this.hasLoadedOnce = true
     this.refresh()
   },
 
   onShow() {
+    if (this.hasLoadedOnce && !this.skippedInitialShow) {
+      this.skippedInitialShow = true
+      return
+    }
     this.refresh()
   },
 
@@ -89,21 +97,22 @@ Page({
     const store = storage.loadStore()
     const selectedDate = this.data.selectedDate || worktime.getTodayKey()
     const selectedMonthKey = worktime.toMonthKey(selectedDate)
-    const monthView = worktime.buildMonthView(store, selectedMonthKey)
-    const stats = worktime.buildMonthStats(store, selectedMonthKey)
     const previousMonthKey = worktime.previousMonthKey(selectedMonthKey)
-    const previousView = worktime.buildMonthView(store, previousMonthKey)
+    const ledgers = worktime.computeLedgers(store, [previousMonthKey, selectedMonthKey])
+    const monthView = worktime.buildMonthViewWithLedger(store, selectedMonthKey, ledgers[selectedMonthKey])
+    const stats = worktime.buildRowsStats(monthView.rows)
+    const previousLedger = ledgers[previousMonthKey]
     const selectedRows = view.decorateRows(monthView.rows, selectedDate)
     const selectedRow = selectedRows.find((row) => row.dateKey === selectedDate)
     const dateStatus = view.buildDateStatus(selectedRow)
-    const compareItems = this.buildCompareItems(monthView, previousView)
+    const compareItems = this.buildCompareItems(monthView, previousLedger)
 
     this.setData({
       store,
       selectedDate,
       selectedMonthKey,
       monthLabel: monthView.monthLabel,
-      previousMonthLabel: previousView.monthLabel,
+      previousMonthLabel: worktime.getMonthLabel(previousMonthKey),
       ledger: monthView.ledger,
       openingInput: worktime.formatHours(monthView.ledger.openingBalanceMinutes),
       monthDeltaText: worktime.formatHours(monthView.ledger.monthDeltaMinutes, true),
@@ -116,24 +125,26 @@ Page({
     })
   },
 
-  buildCompareItems(monthView, previousView) {
+  buildCompareItems(monthView, previousLedger) {
+    const previousMonthDeltaMinutes = previousLedger.monthDeltaMinutes
+    const previousClosingBalanceMinutes = previousLedger.closingBalanceMinutes
     const rawItems = [
       {
         label: '本月结算',
         currentValue: monthView.ledger.monthDeltaMinutes,
-        previousValue: previousView.ledger.monthDeltaMinutes,
-        diffValue: monthView.ledger.monthDeltaMinutes - previousView.ledger.monthDeltaMinutes,
+        previousValue: previousMonthDeltaMinutes,
+        diffValue: monthView.ledger.monthDeltaMinutes - previousMonthDeltaMinutes,
         current: `${worktime.formatHours(monthView.ledger.monthDeltaMinutes, true)}h`,
-        previous: `${worktime.formatHours(previousView.ledger.monthDeltaMinutes, true)}h`,
+        previous: `${worktime.formatHours(previousMonthDeltaMinutes, true)}h`,
         unit: 'h'
       },
       {
         label: '本月结余',
         currentValue: monthView.ledger.closingBalanceMinutes,
-        previousValue: previousView.ledger.closingBalanceMinutes,
-        diffValue: monthView.ledger.closingBalanceMinutes - previousView.ledger.closingBalanceMinutes,
+        previousValue: previousClosingBalanceMinutes,
+        diffValue: monthView.ledger.closingBalanceMinutes - previousClosingBalanceMinutes,
         current: `${worktime.formatHours(monthView.ledger.closingBalanceMinutes)}h`,
-        previous: `${worktime.formatHours(previousView.ledger.closingBalanceMinutes)}h`,
+        previous: `${worktime.formatHours(previousClosingBalanceMinutes)}h`,
         unit: 'h'
       }
     ]

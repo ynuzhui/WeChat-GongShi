@@ -140,8 +140,8 @@ function parseBackupText(text) {
 }
 
 function makeBackupFileName(input) {
-  const stamp = worktime.formatBeijingMinuteStamp(input)
-  return `工时清单备份-${stamp}.json`
+  const stamp = worktime.formatBeijingCompactMinuteStamp(input)
+  return `备份-${stamp}.json`
 }
 
 module.exports = {

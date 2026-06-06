@@ -47,12 +47,6 @@
   width: 66rpx !important;
 }
 
-.nav-button .t-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .date-title-wrap {
   flex: 1;
   display: flex;
@@ -60,6 +54,70 @@
   justify-content: center;
   min-width: 0;
   text-align: center;
+}
+
+.nav-arrow {
+  position: relative;
+  width: 30rpx;
+  height: 30rpx;
+}
+
+.nav-arrow::before,
+.nav-arrow::after {
+  position: absolute;
+  top: 50%;
+  width: 16rpx;
+  height: 4rpx;
+  border-radius: 999rpx;
+  background: var(--app-primary);
+  content: '';
+}
+
+.nav-arrow-left::before,
+.nav-arrow-left::after {
+  left: 8rpx;
+  transform-origin: 2rpx 50%;
+}
+
+.nav-arrow-left::before {
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.nav-arrow-left::after {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.nav-arrow-right::before,
+.nav-arrow-right::after {
+  right: 8rpx;
+  transform-origin: 14rpx 50%;
+}
+
+.nav-arrow-right::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.nav-arrow-right::after {
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.nav-arrow-double {
+  margin-left: 12rpx;
+}
+
+.nav-arrow-double::before,
+.nav-arrow-double::after {
+  box-shadow: -12rpx 0 0 var(--app-primary);
+}
+
+.nav-arrow-right.nav-arrow-double {
+  margin-right: 12rpx;
+  margin-left: 0;
+}
+
+.nav-arrow-right.nav-arrow-double::before,
+.nav-arrow-right.nav-arrow-double::after {
+  box-shadow: 12rpx 0 0 var(--app-primary);
 }
 
 .date-title {

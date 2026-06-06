@@ -1,12 +1,168 @@
 .profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
   height: 100vh;
-  overflow: hidden;
   padding: 22rpx 22rpx 96rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.profile-hero {
+  flex: none;
+  padding: 22rpx;
+  border: 1rpx solid rgba(22, 122, 97, 0.12);
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-shadow: 0 12rpx 34rpx rgba(27, 54, 46, 0.06);
+}
+
+.profile-identity,
+.profile-summary,
+.profile-tabs,
+.profile-tab,
+.summary-chip {
+  display: flex;
+  align-items: center;
+}
+
+.profile-identity {
+  gap: 18rpx;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 88rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.profile-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-title,
+.profile-subtitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-title {
+  color: var(--app-text);
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.profile-subtitle {
+  margin-top: 8rpx;
+  color: var(--app-text-muted);
+  font-size: 23rpx;
+}
+
+.profile-summary {
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.summary-chip {
+  flex: 1;
+  min-width: 0;
+  min-height: 76rpx;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 12rpx;
+  background: var(--app-card-soft);
+}
+
+.summary-chip text:first-child {
+  color: var(--app-text-muted);
+  font-size: 21rpx;
+  line-height: 1.1;
+}
+
+.summary-chip text:last-child {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  margin-top: 8rpx;
+  color: var(--app-text);
+  font-size: 25rpx;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-tabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
+.profile-tab {
+  min-width: 0;
+  min-height: 86rpx;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 10rpx 6rpx;
+  border: 1rpx solid var(--app-border);
+  border-radius: 14rpx;
+  background: #ffffff;
+  color: var(--app-text-muted);
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.profile-tab::after {
+  border: 0;
+}
+
+.profile-tab.is-active {
+  border-color: rgba(22, 122, 97, 0.42);
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+.profile-tab text {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-content {
+  flex: 1;
+  min-height: 0;
+  height: 0;
+}
+
+.profile-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  color: transparent;
 }
 
 .tool-panel {
   margin-bottom: 16rpx;
   padding: 22rpx;
+}
+
+.balance-month-picker {
+  display: block;
+  margin-top: 16rpx;
 }
 
 .select-box,
@@ -202,6 +358,43 @@
   border: 1rpx dashed var(--app-border-strong);
   border-radius: 12rpx;
   background: var(--app-card-soft);
+}
+
+.balance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 16rpx;
+  padding: 22rpx;
+  border: 1rpx solid rgba(22, 122, 97, 0.14);
+  border-radius: 12rpx;
+  background: var(--app-primary-soft);
+}
+
+.balance-card-label {
+  color: var(--app-text-muted);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.balance-card-value {
+  color: var(--app-primary);
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.balance-field {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 104rpx;
+  margin-top: 16rpx;
+  padding: 14rpx 18rpx !important;
+  border: 1rpx solid var(--app-border);
+  border-radius: 12rpx;
+  background: var(--app-card-soft) !important;
+  box-sizing: border-box;
 }
 
 .export-info {
