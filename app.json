@@ -6,16 +6,18 @@
   ],
   "window": {
     "navigationBarTitleText": "工时清单",
-    "navigationBarBackgroundColor": "#f6f8f7",
-    "navigationBarTextStyle": "black",
-    "backgroundColor": "#f6f8f7",
-    "backgroundTextStyle": "dark"
+    "navigationBarBackgroundColor": "@navBgColor",
+    "navigationBarTextStyle": "@navTextStyle",
+    "backgroundColor": "@pageBgColor",
+    "backgroundTextStyle": "@bgTextStyle"
   },
+  "darkmode": true,
+  "themeLocation": "theme.json",
   "tabBar": {
-    "color": "#6c7b75",
-    "selectedColor": "#167a61",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "@tabColor",
+    "selectedColor": "@tabSelectedColor",
+    "backgroundColor": "@tabBgColor",
+    "borderStyle": "@tabBorderStyle",
     "list": [
       {
         "pagePath": "pages/index/index",

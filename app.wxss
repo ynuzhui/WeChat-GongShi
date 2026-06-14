@@ -1,37 +1,71 @@
 page {
   min-height: 100vh;
-  --primary-color: #167a61;
-  --button-primary-background-color: #167a61;
-  --button-primary-border-color: #167a61;
-  --button-danger-background-color: #b13b2e;
-  --button-danger-border-color: #b13b2e;
-  --switch-on-background-color: #167a61;
-  --switch-on-border-color: #167a61;
-  --tag-primary-color: #167a61;
-  --tag-success-color: #167a61;
-  --tag-warning-color: #d97706;
-  --tag-danger-color: #b13b2e;
+  /* 设计 token：现代靛蓝体系——主色鸢尾靛 #5B5BD6，负向玫瑰红 #E5484D，警示琥珀 #D97706 */
+  --app-primary: #5b5bd6;
+  --app-primary-soft: #ededfd;
+  --app-primary-border: rgba(91, 91, 214, 0.3);
+  --app-primary-glow: rgba(91, 91, 214, 0.16);
+  --app-warning: #d97706;
+  --app-warning-soft: #fdf3e1;
+  --app-danger: #e5484d;
+  --app-danger-soft: #feebec;
+  --app-danger-border: rgba(229, 72, 77, 0.3);
+  --app-bg: #f4f4f8;
+  --app-card: #ffffff;
+  --app-card-soft: #f4f4f8;
+  --app-border: #e9e9f0;
+  --app-border-strong: #d9d9e3;
+  --app-text: #1a1a21;
+  --app-text-muted: #65656f;
+  --app-text-soft: #9d9da7;
+  --app-shadow: 0 20rpx 60rpx rgba(80, 80, 140, 0.07);
+  --app-radius: 40rpx;
+  --app-radius-sm: 24rpx;
+  /* vant 同名变量映射到 token，组件自动跟随主题与深浅模式 */
+  --primary-color: var(--app-primary);
+  --button-primary-background-color: var(--app-primary);
+  --button-primary-border-color: var(--app-primary);
+  --button-danger-background-color: var(--app-danger);
+  --button-danger-border-color: var(--app-danger);
+  --switch-on-background-color: var(--app-primary);
+  --switch-on-border-color: var(--app-primary);
+  --tag-primary-color: var(--app-primary);
+  --tag-success-color: var(--app-primary);
+  --tag-warning-color: var(--app-warning);
+  --tag-danger-color: var(--app-danger);
   --cell-font-size: 28rpx;
   --cell-line-height: 40rpx;
-  --field-label-color: #66766f;
-  --app-bg: #f5f7f8;
-  --app-card: #ffffff;
-  --app-card-soft: #f9fbfa;
-  --app-border: #dde8e3;
-  --app-border-strong: #c8d8d1;
-  --app-text: #17211d;
-  --app-text-muted: #66766f;
-  --app-text-soft: #8a9892;
-  --app-primary: #167a61;
-  --app-primary-soft: #e9f6f1;
-  --app-warning: #d97706;
-  --app-warning-soft: #fff4df;
-  --app-danger: #b13b2e;
-  --app-danger-soft: #fff0ed;
-  --app-shadow: 0 14rpx 36rpx rgba(31, 55, 47, 0.07);
+  --cell-background-color: var(--app-card);
+  --cell-text-color: var(--app-text);
+  --field-input-text-color: var(--app-text);
+  --field-label-color: var(--app-text-muted);
   background: var(--app-bg);
   color: var(--app-text);
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 深色模式：深蓝黑底而非纯黑，主色提亮一档，层级靠卡片明度区分 */
+@media (prefers-color-scheme: dark) {
+  page {
+    --app-primary: #8487f0;
+    --app-primary-soft: #23234a;
+    --app-primary-border: rgba(132, 135, 240, 0.42);
+    --app-primary-glow: rgba(132, 135, 240, 0.2);
+    --app-warning: #f5a524;
+    --app-warning-soft: #2d2210;
+    --app-danger: #f2555a;
+    --app-danger-soft: #3b1d20;
+    --app-danger-border: rgba(242, 85, 90, 0.42);
+    --app-bg: #0e0e12;
+    --app-card: #1a1a20;
+    --app-card-soft: #25252d;
+    --app-border: #2e2e38;
+    --app-border-strong: #3a3a46;
+    --app-text: #f2f2f7;
+    --app-text-muted: #8f8f9b;
+    --app-text-soft: #57575f;
+    --app-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.5);
+  }
 }
 
 view,
@@ -59,8 +93,7 @@ button::after {
 }
 
 .tool-panel {
-  border: 1rpx solid rgba(221, 232, 227, 0.92);
-  border-radius: 12rpx;
+  border-radius: var(--app-radius);
   background: var(--app-card);
   box-shadow: var(--app-shadow);
 }
@@ -99,4 +132,15 @@ button::after {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+}
+
+/* 全局隐藏右侧滚动条（页面与所有 scroll-view 统一不显示滚动条） */
+page::-webkit-scrollbar,
+scroll-view::-webkit-scrollbar,
+::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent;
+  color: transparent;
 }

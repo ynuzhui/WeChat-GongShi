@@ -55,12 +55,8 @@ try {
   assert.strictEqual(info.SDKVersion, '3.15.2')
   assert.strictEqual(fallbackCalls, 0)
 
-  const tdesignPath = require.resolve('../miniprogram_npm/tdesign-miniprogram/common/wechat.js')
-  const source = require('fs').readFileSync(tdesignPath, 'utf8')
-  assert.ok(source.indexOf('wx.getWindowInfo ? wx.getWindowInfo()') !== -1)
-  assert.ok(source.indexOf('wx.getDeviceInfo ? wx.getDeviceInfo()') !== -1)
-  assert.ok(source.indexOf('wx.getAppBaseInfo ? wx.getAppBaseInfo()') !== -1)
-  assert.ok(source.indexOf('wx.getSystemInfoSync ? wx.getSystemInfoSync()') !== -1)
+  const appConfig = require('fs').readFileSync(require('path').join(__dirname, '..', 'app.json'), 'utf8')
+  assert.strictEqual(appConfig.indexOf('tdesign-miniprogram'), -1)
 
   console.log('system info compatibility tests passed')
 } finally {

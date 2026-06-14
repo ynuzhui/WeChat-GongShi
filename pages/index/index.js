@@ -1,23 +1,7 @@
 const worktime = require('../../utils/worktime')
 const storage = require('../../utils/storage')
-const view = require('../../utils/view')
-
-function diffClass(value) {
-  if (value > 0) {
-    return 'is-plus'
-  }
-  if (value < 0) {
-    return 'is-minus'
-  }
-  return ''
-}
-
-function barWidth(value, maxValue) {
-  if (!value || !maxValue) {
-    return 0
-  }
-  return Math.max(8, Math.round(Math.abs(value) / maxValue * 100))
-}
+const theme = require('../../utils/theme')
+const dashboard = require('./view-model')
 
 function getEventValue(event) {
   const detail = event ? event.detail : ''
@@ -27,48 +11,36 @@ function getEventValue(event) {
   return detail
 }
 
-function buildDateStatusTheme(row) {
-  if (!row || !row.hasEntry) {
-    return 'default'
-  }
-  if (!row.calc.valid) {
-    return 'warning'
-  }
-  if (row.calc.diffMinutes > 0) {
-    return 'success'
-  }
-  if (row.calc.diffMinutes < 0) {
-    return 'danger'
-  }
-  return 'primary'
-}
-
 Page({
+  store: worktime.createDefaultStore(),
   hasLoadedOnce: false,
   skippedInitialShow: false,
 
   data: {
-    store: worktime.createDefaultStore(),
-    prevMonthText: String.fromCharCode(60, 60),
-    prevDayText: String.fromCharCode(60),
-    nextDayText: String.fromCharCode(62),
-    nextMonthText: String.fromCharCode(62, 62),
     selectedDate: worktime.getTodayKey(),
     selectedMonthKey: worktime.toMonthKey(new Date()),
-    monthLabel: '',
-    previousMonthLabel: '',
+    dateTitle: '',
     ledger: {
       openingBalanceMinutes: 0,
       monthDeltaMinutes: 0,
       closingBalanceMinutes: 0
     },
     openingInput: '0',
+    openingTone: '',
     isOpeningInputFocused: false,
     monthDeltaText: '0',
+    monthDeltaTone: '',
     closingBalanceText: '0',
-    dateStatusTime: '未记录',
-    dateStatusDiff: '-',
-    dateStatusTheme: 'default',
+    closingTone: '',
+    boardLabel: '今日出勤',
+    boardTimeText: '未记录',
+    boardTimeTone: 'is-empty',
+    boardDiffText: '—',
+    boardDiffTone: '',
+    boardFilled: false,
+    weekDays: [],
+    lastShiftLabel: '',
+    recentRows: [],
     stats: {
       totalDays: 0,
       recordedCount: 0,
@@ -76,8 +48,7 @@ Page({
       restCount: 0,
       leaveCount: 0,
       missingCount: 0
-    },
-    compareItems: []
+    }
   },
 
   onLoad() {
@@ -95,98 +66,107 @@ Page({
 
   refresh() {
     const store = storage.loadStore()
-    const selectedDate = this.data.selectedDate || worktime.getTodayKey()
-    const selectedMonthKey = worktime.toMonthKey(selectedDate)
-    const previousMonthKey = worktime.previousMonthKey(selectedMonthKey)
-    const ledgers = worktime.computeLedgers(store, [previousMonthKey, selectedMonthKey])
-    const monthView = worktime.buildMonthViewWithLedger(store, selectedMonthKey, ledgers[selectedMonthKey])
-    const stats = worktime.buildRowsStats(monthView.rows)
-    const previousLedger = ledgers[previousMonthKey]
-    const selectedRows = view.decorateRows(monthView.rows, selectedDate)
-    const selectedRow = selectedRows.find((row) => row.dateKey === selectedDate)
-    const dateStatus = view.buildDateStatus(selectedRow)
-    const compareItems = this.buildCompareItems(monthView, previousLedger)
-
-    this.setData({
-      store,
-      selectedDate,
-      selectedMonthKey,
-      monthLabel: monthView.monthLabel,
-      previousMonthLabel: worktime.getMonthLabel(previousMonthKey),
-      ledger: monthView.ledger,
-      openingInput: worktime.formatHours(monthView.ledger.openingBalanceMinutes),
-      monthDeltaText: worktime.formatHours(monthView.ledger.monthDeltaMinutes, true),
-      closingBalanceText: worktime.formatHours(monthView.ledger.closingBalanceMinutes),
-      dateStatusTime: dateStatus.time,
-      dateStatusDiff: dateStatus.diff,
-      dateStatusTheme: buildDateStatusTheme(selectedRow),
-      stats,
-      compareItems
-    })
+    this.store = store
+    this.setData(dashboard.buildDashboardState(store, this.data.selectedDate || worktime.getTodayKey()))
   },
 
-  buildCompareItems(monthView, previousLedger) {
-    const previousMonthDeltaMinutes = previousLedger.monthDeltaMinutes
-    const previousClosingBalanceMinutes = previousLedger.closingBalanceMinutes
-    const rawItems = [
-      {
-        label: '本月结算',
-        currentValue: monthView.ledger.monthDeltaMinutes,
-        previousValue: previousMonthDeltaMinutes,
-        diffValue: monthView.ledger.monthDeltaMinutes - previousMonthDeltaMinutes,
-        current: `${worktime.formatHours(monthView.ledger.monthDeltaMinutes, true)}h`,
-        previous: `${worktime.formatHours(previousMonthDeltaMinutes, true)}h`,
-        unit: 'h'
-      },
-      {
-        label: '本月结余',
-        currentValue: monthView.ledger.closingBalanceMinutes,
-        previousValue: previousClosingBalanceMinutes,
-        diffValue: monthView.ledger.closingBalanceMinutes - previousClosingBalanceMinutes,
-        current: `${worktime.formatHours(monthView.ledger.closingBalanceMinutes)}h`,
-        previous: `${worktime.formatHours(previousClosingBalanceMinutes)}h`,
-        unit: 'h'
-      }
-    ]
-    return rawItems.map((item) => {
-      const maxValue = Math.max(Math.abs(item.currentValue), Math.abs(item.previousValue))
-      const diff = `${worktime.formatHours(item.diffValue, true)}h`
-      const currentBar = barWidth(item.currentValue, maxValue)
-      const previousBar = barWidth(item.previousValue, maxValue)
-      return Object.assign({}, item, {
-        diff,
-        diffClassName: `compare-diff ${diffClass(item.diffValue)}`.trim(),
-        diffClass: diffClass(item.diffValue),
-        currentBar,
-        previousBar,
-        currentBarStyle: `width: ${currentBar}%;`,
-        previousBarStyle: `width: ${previousBar}%;`
-      })
-    })
+  selectDate(dateKey) {
+    if (!dateKey || dateKey === this.data.selectedDate) {
+      return
+    }
+    this.setData({
+      selectedDate: dateKey
+    }, () => this.refresh())
   },
 
   goPrevDay() {
-    this.setData({
-      selectedDate: worktime.addDays(this.data.selectedDate, -1)
-    }, () => this.refresh())
+    this.selectDate(worktime.addDays(this.data.selectedDate, -1))
   },
 
   goNextDay() {
-    this.setData({
-      selectedDate: worktime.addDays(this.data.selectedDate, 1)
-    }, () => this.refresh())
+    this.selectDate(worktime.addDays(this.data.selectedDate, 1))
   },
 
-  goPrevMonth() {
-    this.setData({
-      selectedDate: worktime.addMonthsClamped(this.data.selectedDate, -1)
-    }, () => this.refresh())
+  onDatePicked(event) {
+    this.selectDate(getEventValue(event))
   },
 
-  goNextMonth() {
-    this.setData({
-      selectedDate: worktime.addMonthsClamped(this.data.selectedDate, 1)
-    }, () => this.refresh())
+  // 周视图与近期出勤共用：点击切换选中日期
+  onDayTap(event) {
+    this.selectDate(event.currentTarget.dataset.date)
+  },
+
+  // 点击当日看板跳转填写页并带上选中日期；当日已填写时先弹原生确认
+  goRecordSelected() {
+    const goRecord = () => {
+      storage.setPendingRecordDate(this.data.selectedDate)
+      wx.switchTab({
+        url: '/pages/record/record'
+      })
+    }
+    if (this.data.boardFilled) {
+      wx.showModal({
+        title: '修改当日记录',
+        content: `${this.data.selectedDate} 已有记录，确定前往填写页修改吗？`,
+        confirmText: '去修改',
+        success: (result) => {
+          if (result.confirm) {
+            goRecord()
+          }
+        }
+      })
+      return
+    }
+    goRecord()
+  },
+
+  // 一键把最近一条上班记录复用到选中日期
+  applyLastShift() {
+    const lastShift = worktime.findLatestWorkEntry(this.store, this.data.selectedDate)
+    if (!lastShift) {
+      wx.showToast({
+        title: '暂无可复用的班次',
+        icon: 'none'
+      })
+      return
+    }
+    const apply = () => {
+      const result = worktime.saveEntry(this.store, this.data.selectedDate, {
+        type: worktime.DAY_TYPES.WORK,
+        start: lastShift.start,
+        end: lastShift.end,
+        deductBreak: lastShift.deductBreak,
+        note: ''
+      })
+      if (!result.ok) {
+        wx.showToast({
+          title: result.message || '保存失败',
+          icon: 'none'
+        })
+        return
+      }
+      this.store = storage.saveStore(result.store)
+      this.refresh()
+      wx.showToast({
+        title: '已复用上次班次',
+        icon: 'success'
+      })
+    }
+    if (storage.getStoredEntry(this.store, this.data.selectedDate)) {
+      wx.showModal({
+        title: '覆盖已有记录',
+        content: `${this.data.selectedDate} 已有记录，确定覆盖为 ${worktime.formatTimeRange(lastShift)} 吗？`,
+        confirmText: '覆盖',
+        confirmColor: theme.DANGER_COLOR,
+        success: (result) => {
+          if (result.confirm) {
+            apply()
+          }
+        }
+      })
+      return
+    }
+    apply()
   },
 
   onOpeningInput(event) {
@@ -224,7 +204,7 @@ Page({
       this.refresh()
       return
     }
-    storage.saveStore(worktime.setOpeningBalance(this.data.store, this.data.selectedMonthKey, minutes))
+    this.store = storage.saveStore(worktime.setOpeningBalance(this.store, this.data.selectedMonthKey, minutes))
     this.refresh()
   }
 })

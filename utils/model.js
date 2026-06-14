@@ -415,6 +415,28 @@ function countRecords(storeInput) {
   }, 0)
 }
 
+// 查找 beforeDate 之前（不含当天）最近一条上班记录，用于录入页「复用上次」
+function findLatestWorkEntry(storeInput, beforeDate) {
+  const store = normalizeStore(storeInput)
+  const limit = beforeDate ? String(beforeDate) : ''
+  let bestDate = ''
+  let bestEntry = null
+  Object.keys(store.months).forEach((monthKey) => {
+    const entries = getMonth(store, monthKey).entries
+    Object.keys(entries).forEach((dateKey) => {
+      if (limit && dateKey >= limit) {
+        return
+      }
+      const entry = entries[dateKey]
+      if (entry && entry.type === DAY_TYPES.WORK && entry.start && entry.end && dateKey > bestDate) {
+        bestDate = dateKey
+        bestEntry = entry
+      }
+    })
+  })
+  return bestEntry ? Object.assign({}, bestEntry) : null
+}
+
 module.exports = {
   STORAGE_KEY,
   PENDING_RECORD_DATE_KEY,
@@ -444,5 +466,6 @@ module.exports = {
   seedDefaultPresets,
   ensureDefaultPresets,
   entryFromPreset,
-  countRecords
+  countRecords,
+  findLatestWorkEntry
 }

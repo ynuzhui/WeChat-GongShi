@@ -1,32 +1,29 @@
 <view class="page dashboard-page">
-  <view class="month-bar">
-    <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goPrevMonth">
-      <view class="nav-arrow nav-arrow-left nav-arrow-double"></view>
-    </van-button>
-    <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goPrevDay">
-      <view class="nav-arrow nav-arrow-left"></view>
-    </van-button>
-    <view class="date-title-wrap">
-      <text class="date-title">{{selectedDate}}</text>
-    </view>
-    <van-button custom-class="nav-button day-nav" type="primary" plain round size="small" bind:click="goNextDay">
-      <view class="nav-arrow nav-arrow-right"></view>
-    </van-button>
-    <van-button custom-class="nav-button month-nav" type="primary" plain round size="small" bind:click="goNextMonth">
-      <view class="nav-arrow nav-arrow-right nav-arrow-double"></view>
-    </van-button>
+  <view class="date-header">
+    <button class="nav-arrow" hover-class="nav-arrow-active" bindtap="goPrevDay">
+      <van-icon name="arrow-left" size="34rpx"></van-icon>
+    </button>
+    <picker class="date-picker" mode="date" value="{{selectedDate}}" bindchange="onDatePicked">
+      <view class="date-capsule" hover-class="date-capsule-active">
+        <text class="date-capsule-text">{{dateTitle}}</text>
+        <van-icon name="arrow-down" size="22rpx" color="var(--app-text-soft)"></van-icon>
+      </view>
+    </picker>
+    <button class="nav-arrow" hover-class="nav-arrow-active" bindtap="goNextDay">
+      <van-icon name="arrow" size="34rpx"></van-icon>
+    </button>
   </view>
 
-  <view class="summary-grid">
-    <view class="metric metric-primary">
-      <view class="metric-head">
-        <van-icon name="balance-list-o" size="34rpx" color="#167a61"></van-icon>
-        <text class="metric-label">上月结余</text>
+  <view class="asset-grid">
+    <view class="asset-card {{openingTone}}" bindtap="focusOpeningInput">
+      <view class="asset-label-row">
+        <van-icon name="balance-list-o" size="24rpx" color="var(--app-text-soft)"></van-icon>
+        <text class="asset-label">上月结余</text>
       </view>
-      <view class="metric-field-wrap metric-field-editable" bindtap="focusOpeningInput">
-        <text class="metric-value-text">{{openingInput}}h</text>
+      <view class="asset-value-wrap">
+        <text class="asset-value">{{openingInput}}h</text>
         <input
-          class="metric-input-capture"
+          class="asset-input-capture"
           type="text"
           value="{{openingInput}}"
           focus="{{isOpeningInputFocused}}"
@@ -36,48 +33,89 @@
         />
       </view>
     </view>
-    <view class="metric metric-primary">
-      <view class="metric-head">
-        <van-icon name="bar-chart-o" size="34rpx" color="#167a61"></van-icon>
-        <text class="metric-label">本月结算</text>
+    <view class="asset-card {{monthDeltaTone}}">
+      <view class="asset-label-row">
+        <van-icon name="exchange" size="24rpx" color="var(--app-text-soft)"></van-icon>
+        <text class="asset-label">本月结算</text>
       </view>
-      <view class="metric-field-wrap">
-        <text class="metric-value-text">{{monthDeltaText}}h</text>
+      <text class="asset-value">{{monthDeltaText}}h</text>
+    </view>
+    <view class="asset-card {{closingTone}}">
+      <view class="asset-label-row">
+        <van-icon name="gold-coin-o" size="24rpx" color="var(--app-text-soft)"></van-icon>
+        <text class="asset-label">本月结余</text>
+      </view>
+      <text class="asset-value">{{closingBalanceText}}h</text>
+    </view>
+  </view>
+
+  <view class="modern-card today-board" hover-class="card-pressed" bindtap="goRecordSelected">
+    <view class="today-icon">
+      <van-icon name="clock-o" size="36rpx"></van-icon>
+    </view>
+    <view class="today-info">
+      <text class="today-label">{{boardLabel}}</text>
+      <text class="today-time {{boardTimeTone}}">{{boardTimeText}}</text>
+    </view>
+    <view class="today-diff-wrap">
+      <text class="today-diff-label">差额</text>
+      <text class="today-diff {{boardDiffTone}}">{{boardDiffText}}</text>
+    </view>
+  </view>
+
+  <view class="modern-card week-card">
+    <view class="card-title-row">
+      <view class="card-title">
+        <van-icon name="calendar-o" size="30rpx" color="var(--app-primary)"></van-icon>
+        <text>本周出勤</text>
+      </view>
+      <text class="card-title-extra">点击查看当天</text>
+    </view>
+    <view class="week-row">
+      <view
+        wx:for="{{weekDays}}"
+        wx:key="dateKey"
+        class="week-day {{item.dotTone}} {{item.isToday ? 'is-today' : ''}} {{item.isSelected ? 'is-selected' : ''}}"
+        data-date="{{item.dateKey}}"
+        bindtap="onDayTap"
+      >
+        <text class="week-day-name">{{item.weekday}}</text>
+        <view class="week-day-dot">{{item.dotText}}</view>
       </view>
     </view>
-    <view class="metric metric-primary">
-      <view class="metric-head">
-        <van-icon name="points" size="34rpx" color="#167a61"></van-icon>
-        <text class="metric-label">本月结余</text>
-      </view>
-      <view class="metric-field-wrap">
-        <text class="metric-value-text">{{closingBalanceText}}h</text>
+    <button wx:if="{{lastShiftLabel}}" class="quick-action" hover-class="quick-action-active" bindtap="applyLastShift">
+      <van-icon name="replay" size="28rpx"></van-icon>
+      <text>一键复用上次班次 {{lastShiftLabel}}</text>
+    </button>
+  </view>
+
+  <view class="list-section">
+    <view class="section-title">
+      <van-icon name="underway-o" size="30rpx" color="var(--app-primary)"></van-icon>
+      <text>近期出勤</text>
+    </view>
+    <view class="modern-card list-card">
+      <view
+        wx:for="{{recentRows}}"
+        wx:key="dateKey"
+        class="list-row"
+        hover-class="list-row-pressed"
+        data-date="{{item.dateKey}}"
+        bindtap="onDayTap"
+      >
+        <text class="col-date">{{item.dateLabel}}</text>
+        <text class="col-content {{item.contentTone}}">{{item.content}}</text>
+        <text class="col-diff">{{item.diffText}}</text>
       </view>
     </view>
   </view>
 
-  <view class="tool-panel status-panel">
-    <view class="status-item">
-      <view class="status-icon">
-        <van-icon name="clock-o" size="34rpx" color="#167a61"></van-icon>
+  <view class="modern-card month-summary">
+    <view class="card-title-row">
+      <view class="card-title">
+        <van-icon name="notes-o" size="30rpx" color="var(--app-primary)"></van-icon>
+        <text>本月摘要</text>
       </view>
-      <view class="status-copy">
-        <text class="panel-label">上班时间</text>
-        <text class="status-value">{{dateStatusTime}}</text>
-      </view>
-    </view>
-    <view class="status-item status-diff">
-      <text class="panel-label">差额</text>
-      <van-tag custom-class="status-tag" type="{{dateStatusTheme}}" plain round size="large">{{dateStatusDiff}}</van-tag>
-    </view>
-  </view>
-
-  <view class="tool-panel">
-    <view class="panel-title-row">
-      <view>
-        <text class="panel-title">本月摘要</text>
-      </view>
-      <van-icon name="notes-o" size="36rpx" color="#167a61"></van-icon>
     </view>
     <view class="stat-row">
       <view class="stat-item"><text>上班</text><text>{{stats.workCount}}</text></view>
@@ -86,5 +124,4 @@
       <view class="stat-item"><text>未记</text><text>{{stats.missingCount}}</text></view>
     </view>
   </view>
-
 </view>

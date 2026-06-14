@@ -1,10 +1,19 @@
 .record-page {
-  padding: 22rpx 22rpx 96rpx;
+  padding: 20rpx 28rpx 96rpx;
 }
 
 .tool-panel {
-  margin-bottom: 16rpx;
-  padding: 22rpx;
+  margin-bottom: 28rpx;
+  padding: 32rpx;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: var(--app-text);
+  font-size: 28rpx;
+  font-weight: 700;
 }
 
 .record-actions,
@@ -20,9 +29,10 @@
   justify-content: space-between;
 }
 
+/* ===== 日期导航 ===== */
 .date-switch {
-  gap: 12rpx;
-  margin-top: 18rpx;
+  gap: 16rpx;
+  margin-top: 24rpx;
 }
 
 .date-switch picker {
@@ -30,41 +40,59 @@
   min-width: 0;
 }
 
-.date-nav {
-  width: 64rpx !important;
-  height: 64rpx !important;
-  padding: 0 !important;
-}
-
-.date-line {
+.nav-arrow {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10rpx;
-  height: 64rpx;
-  padding: 0 18rpx;
-  border: 1rpx solid var(--app-border);
-  border-radius: 12rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: var(--app-radius-sm);
   background: var(--app-card-soft);
+  color: var(--app-text-muted);
+  transition: all 0.2s;
+}
+
+.nav-arrow-active {
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+  transform: scale(0.92);
+}
+
+.date-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  height: 72rpx;
+  padding: 0 24rpx;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-card-soft);
+  transition: transform 0.2s;
+}
+
+.date-capsule-active {
+  transform: scale(0.97);
 }
 
 .date-main {
   overflow: hidden;
   max-width: 100%;
   color: var(--app-text);
-  font-size: 30rpx;
-  font-weight: 800;
+  font-size: 29rpx;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* ===== 类型分段 ===== */
 .segments {
   display: flex;
   gap: 8rpx;
-  margin-top: 18rpx;
+  margin-top: 24rpx;
   padding: 8rpx;
-  border-radius: 12rpx;
-  background: #eef3f1;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-card-soft);
 }
 
 .segment {
@@ -72,78 +100,98 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 62rpx;
+  height: 64rpx;
   padding: 0;
-  border-radius: 10rpx;
-  color: #52615c;
+  border-radius: 18rpx;
+  color: var(--app-text-muted);
   font-size: 25rpx;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   background: transparent;
+  transition: all 0.2s;
 }
 
 .segment.is-active {
   color: #ffffff;
   background: var(--app-primary);
-  box-shadow: 0 10rpx 20rpx rgba(22, 122, 97, 0.18);
+  font-weight: 700;
+  box-shadow: 0 8rpx 20rpx var(--app-primary-glow);
 }
 
-.preset-select,
-.time-field,
-.note-field {
-  border: 1rpx solid var(--app-border);
-  border-radius: 12rpx;
-  background: var(--app-card-soft) !important;
+/* ===== 班次选择 / 手动填写 ===== */
+.preset-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
 }
 
-.preset-select,
-.time-field {
-  display: flex !important;
-  align-items: center !important;
+.preset-picker {
+  flex: 1;
+  min-width: 0;
 }
 
-.preset-select {
+.preset-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 18rpx;
-  min-height: 100rpx !important;
-  padding: 14rpx 24rpx !important;
+  gap: 10rpx;
+  height: 88rpx;
+  padding: 0 16rpx;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-card-soft);
+  color: var(--app-text-muted);
+  transition: all 0.2s;
+}
+
+.preset-btn.manual-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 选中班次后：班次按钮占据更多空间以完整显示时间，手动按钮收窄 */
+.preset-picker {
+  transition: flex 0.2s;
+}
+
+.preset-btn.is-grow {
+  padding: 0 12rpx;
+}
+
+.preset-btn.manual-btn.is-compact {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0 22rpx;
+}
+
+.preset-btn.is-active {
+  background: var(--app-primary-soft);
+  box-shadow: inset 0 0 0 2rpx var(--app-primary);
   color: var(--app-primary);
-  font-size: 29rpx;
-  font-weight: 800;
-  line-height: 1.25;
-  text-align: center;
 }
 
-.preset-select.is-active {
-  border-color: rgba(22, 122, 97, 0.42);
-  background: var(--app-primary-soft) !important;
+.preset-btn.is-disabled {
+  flex: 1;
+  min-width: 0;
+  color: var(--app-text-soft);
 }
 
-.preset-select text {
-  display: block;
+.preset-btn-text {
   overflow: hidden;
   max-width: 100%;
+  font-size: 26rpx;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.manual-button {
-  height: 70rpx !important;
-  margin-top: 16rpx !important;
-  font-weight: 800 !important;
+.chip-pressed {
+  opacity: 0.8;
+  transform: scale(0.97);
 }
 
-.empty-wrap {
-  margin-top: 18rpx;
-  border: 1rpx dashed var(--app-border-strong);
-  border-radius: 12rpx;
-  background: var(--app-card-soft);
-}
-
+/* ===== 手动时间块 ===== */
 .time-grid {
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .time-grid picker {
@@ -151,47 +199,52 @@
   min-width: 0;
 }
 
-.time-field {
-  min-height: 112rpx;
-  padding: 14rpx 8rpx !important;
+.time-arrow {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.time-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-card-soft);
+  transition: all 0.2s;
+}
+
+.time-block-value {
+  color: var(--app-text);
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .switch-line {
   gap: 18rpx;
-  margin-top: 16rpx;
-  padding: 18rpx;
-  border-radius: 12rpx;
+  margin-top: 20rpx;
+  padding: 22rpx 24rpx;
+  border-radius: var(--app-radius-sm);
   background: var(--app-card-soft);
 }
 
-.switch-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.switch-title,
-.switch-note {
-  display: block;
+.switch-title {
   overflow: hidden;
+  color: var(--app-text);
+  font-size: 26rpx;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.switch-title {
-  color: var(--app-text);
-  font-size: 26rpx;
-  font-weight: 800;
-}
-
-.switch-note {
-  margin-top: 6rpx;
-  color: var(--app-text-muted);
-  font-size: 22rpx;
-}
-
+/* ===== 备注与保存 ===== */
 .note-field {
   min-height: 104rpx !important;
-  padding: 18rpx 8rpx !important;
+  padding: 18rpx 10rpx !important;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-card-soft) !important;
 }
 
 .calc-line {
@@ -199,10 +252,10 @@
   align-items: center;
   gap: 10rpx;
   overflow: hidden;
-  margin-top: 16rpx;
-  padding: 16rpx 18rpx;
-  border-radius: 12rpx;
-  color: #244137;
+  margin-top: 20rpx;
+  padding: 18rpx 22rpx;
+  border-radius: var(--app-radius-sm);
+  color: var(--app-text);
   background: var(--app-primary-soft);
   font-size: 24rpx;
   line-height: 1.35;
@@ -217,18 +270,36 @@
 }
 
 .calc-line.is-warning {
-  color: #7a3f0e;
+  color: var(--app-warning);
   background: var(--app-warning-soft);
 }
 
 .record-actions {
-  justify-content: flex-end;
-  gap: 12rpx;
-  margin-top: 18rpx;
+  gap: 14rpx;
+  margin-top: 22rpx;
 }
 
-.action-button {
-  min-width: 148rpx !important;
-  height: 72rpx !important;
-  font-weight: 800 !important;
+.record-actions van-button {
+  display: flex;
+  min-width: 0;
+}
+
+.record-actions van-button:first-child {
+  flex: 1;
+}
+
+.record-actions van-button:last-child {
+  flex: 2;
+}
+
+.clear-button,
+.save-button {
+  width: 100% !important;
+  height: 80rpx !important;
+  font-weight: 700 !important;
+}
+
+.save-button {
+  font-size: 29rpx !important;
+  box-shadow: 0 10rpx 26rpx var(--app-primary-glow) !important;
 }

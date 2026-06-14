@@ -45,16 +45,12 @@ function buildEntrySummary(calc) {
     return `当日差额 ${diff}，实计 ${worked}${breakText}`
   }
   if (calc.type === worktime.DAY_TYPES.LEAVE) {
-    return `当日差额 ${diff}，按调休一天计算`
+    return `当日差额 ${diff}`
   }
   if (calc.type === worktime.DAY_TYPES.REST) {
     return `当日差额 ${diff}，本休不影响结余`
   }
   return `当日差额 ${diff}`
-}
-
-function buildPresetOptions(presets) {
-  return presets.map((preset) => worktime.formatPresetOption(preset))
 }
 
 function buildSaveStateLabel(hasRecord, isDirty) {
@@ -93,7 +89,6 @@ module.exports = {
   addHourSuffix,
   decorateRows,
   buildEntrySummary,
-  buildPresetOptions,
   buildSaveStateLabel,
   buildDateStatus
 }

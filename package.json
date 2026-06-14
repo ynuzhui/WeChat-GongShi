@@ -1,9 +1,17 @@
 {
   "name": "worktime-ledger-miniprogram",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "private": true,
   "description": "工时清单微信小程序",
+  "scripts": {
+    "test": "node tests/worktime.test.js && node tests/index-page.test.js && node tests/record-page.test.js && node tests/profile-page.test.js && node tests/system-info-compat.test.js && node tests/performance.test.js && node tests/backup-export.test.js && node tests/remote-backup.test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
   "dependencies": {
     "@vant/weapp": "1.11.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
   }
 }

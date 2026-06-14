@@ -60,6 +60,12 @@ function getWeekdayLabel(dateKey) {
   return WEEKDAY_LABELS[dateFromKey(dateKey).getDay()]
 }
 
+// 短日期标签：年份取后两位并附星期，如 "26-06-12 周五"
+function getShortDateLabel(dateKey) {
+  const parsed = parseDateKey(dateKey)
+  return `${parsed.year}-${pad(parsed.month)}-${pad(parsed.day)} 周${getWeekdayLabel(dateKey)}`
+}
+
 function daysInMonth(monthKey) {
   const parsed = parseDateKey(monthKey)
   return new Date(parsed.year, parsed.month, 0).getDate()
@@ -151,6 +157,17 @@ function roundToHalfHourTime(input, fallback) {
   }
   const rounded = Math.round(minutes / 30) * 30
   return formatPickerTime(Math.max(0, Math.min(23 * 60 + 30, rounded)))
+}
+
+// 在半小时网格上按 deltaSteps 步进（每步 30 分钟），并钳位到 00:00–23:30
+function stepHalfHourTime(time, deltaSteps, fallback) {
+  const base = parseTime(roundToHalfHourTime(time, fallback))
+  if (base === null) {
+    return '00:00'
+  }
+  const steps = Math.trunc(Number(deltaSteps) || 0)
+  const next = Math.max(0, Math.min(23 * 60 + 30, base + steps * 30))
+  return formatPickerTime(next)
 }
 
 function buildHalfHourTimePickerRange() {
@@ -259,6 +276,38 @@ function formatBeijingCompactMinuteStamp(input) {
   ].join('')
 }
 
+function formatBeijingCompactSecondStamp(input) {
+  const source = input ? new Date(input) : new Date()
+  const beijingTime = new Date(source.getTime() + 8 * 60 * 60 * 1000)
+  return [
+    pad(beijingTime.getUTCFullYear() % 100),
+    pad(beijingTime.getUTCMonth() + 1),
+    pad(beijingTime.getUTCDate())
+  ].join('') + '-' + [
+    pad(beijingTime.getUTCHours()),
+    pad(beijingTime.getUTCMinutes()),
+    pad(beijingTime.getUTCSeconds())
+  ].join('')
+}
+
+function formatBeijingDateTime(input) {
+  const source = input ? new Date(input) : new Date()
+  const beijingTime = new Date(source.getTime() + 8 * 60 * 60 * 1000)
+  return [
+    beijingTime.getUTCFullYear(),
+    pad(beijingTime.getUTCMonth() + 1),
+    pad(beijingTime.getUTCDate())
+  ].join('-') + 'T' + [
+    pad(beijingTime.getUTCHours()),
+    pad(beijingTime.getUTCMinutes()),
+    pad(beijingTime.getUTCSeconds())
+  ].join(':') + '+08:00'
+}
+
+function formatBeijingDisplayDateTime(input) {
+  return formatBeijingDateTime(input).replace('T', ' ').replace('+08:00', '')
+}
+
 module.exports = {
   DEFAULT_ROUNDING_MINUTES,
   WEEKDAY_LABELS,
@@ -274,6 +323,7 @@ module.exports = {
   getDateLabel,
   getExportDateLabel,
   getWeekdayLabel,
+  getShortDateLabel,
   daysInMonth,
   nextMonthKey,
   previousMonthKey,
@@ -285,6 +335,7 @@ module.exports = {
   adjustTimeForCalculation,
   formatPickerTime,
   roundToHalfHourTime,
+  stepHalfHourTime,
   buildHalfHourTimePickerRange,
   getHalfHourTimePickerValue,
   getHalfHourTimeFromPickerValue,
@@ -292,6 +343,9 @@ module.exports = {
   formatTimeRange,
   formatBeijingMinuteStamp,
   formatBeijingCompactMinuteStamp,
+  formatBeijingCompactSecondStamp,
+  formatBeijingDateTime,
+  formatBeijingDisplayDateTime,
   roundToStep,
   formatHours,
   parseHoursToMinutes

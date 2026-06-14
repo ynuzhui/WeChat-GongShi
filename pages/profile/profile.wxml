@@ -6,21 +6,6 @@
       </view>
       <view class="profile-copy">
         <text class="profile-title">工时清单</text>
-        <text class="profile-subtitle">{{monthLabel}} · 本地记录</text>
-      </view>
-    </view>
-    <view class="profile-summary">
-      <view class="summary-chip">
-        <text>上月结余</text>
-        <text>{{openingBalanceText}}h</text>
-      </view>
-      <view class="summary-chip">
-        <text>本月结算</text>
-        <text>{{monthDeltaText}}h</text>
-      </view>
-      <view class="summary-chip">
-        <text>本月结余</text>
-        <text>{{closingBalanceText}}h</text>
       </view>
     </view>
   </view>
@@ -38,151 +23,217 @@
     </button>
   </view>
 
-  <scroll-view class="profile-content" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+  <view class="profile-content">
     <view wx:if="{{activeProfileTab === 'report'}}" class="tool-panel">
-      <view class="export-head">
-        <view class="export-info">
-          <text class="panel-title">报表导出</text>
+      <view class="panel-title-row">
+        <view class="card-title">
+          <van-icon name="description-o" size="30rpx" color="var(--app-primary)"></van-icon>
+          <text>报表导出</text>
         </view>
-        <van-icon name="description-o" size="38rpx" color="#167a61"></van-icon>
+      </view>
+
+      <view class="range-chips">
+        <button class="range-chip" hover-class="chip-pressed" bindtap="useWeekExportRange">本周</button>
+        <button class="range-chip" hover-class="chip-pressed" bindtap="useMonthExportRange">本月</button>
+        <button class="range-chip" hover-class="chip-pressed" bindtap="useLastMonthExportRange">上月</button>
       </view>
 
       <view class="range-row">
         <picker mode="date" value="{{exportStart}}" bindchange="onExportStartChange">
-          <van-cell custom-class="range-field" title="开始" value="{{exportStart}}" icon="calendar-o" is-link border="{{false}}"></van-cell>
+          <view class="range-block" hover-class="chip-pressed">
+            <text class="range-block-value">{{exportStart}}</text>
+          </view>
         </picker>
+        <view class="range-arrow">
+          <van-icon name="arrow" size="26rpx" color="var(--app-text-soft)"></van-icon>
+        </view>
         <picker mode="date" value="{{exportEnd}}" bindchange="onExportEndChange">
-          <van-cell custom-class="range-field" title="结束" value="{{exportEnd}}" icon="calendar-o" is-link border="{{false}}"></van-cell>
+          <view class="range-block" hover-class="chip-pressed">
+            <text class="range-block-value">{{exportEnd}}</text>
+          </view>
         </picker>
       </view>
 
-      <view class="range-actions">
-        <van-button block plain round type="default" bind:click="useWeekExportRange">本周</van-button>
-        <van-button block plain round type="primary" bind:click="useMonthExportRange">整月</van-button>
-      </view>
       <scroll-view class="export-text" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
         <block wx:if="{{exportLines.length}}">
           <text wx:for="{{exportLines}}" wx:key="*this" class="export-line">{{item}}</text>
         </block>
-        <text wx:else class="export-empty">无记录</text>
+        <text wx:else class="export-empty">当前范围暂无记录</text>
       </scroll-view>
 
-      <view class="action-row export-actions">
-        <van-button custom-class="export-action-button" type="primary" round icon="description-o" bind:click="copyExportText">复制所有</van-button>
-        <van-button custom-class="export-action-button" type="primary" plain round icon="notes-o" bind:click="copyExportDeltaText">仅复制差额</van-button>
-        <van-button custom-class="export-action-button" type="default" plain round icon="photo-o" bind:click="generateReportImage">导出为图片</van-button>
+      <view class="export-actions">
+        <van-button custom-class="export-btn" type="primary" plain round icon="orders-o" bind:click="copyExportText">复制全部</van-button>
+        <van-button custom-class="export-btn" type="primary" plain round icon="notes-o" bind:click="copyExportDeltaText">仅差额</van-button>
+        <van-button custom-class="export-btn" type="primary" round icon="photo-o" bind:click="generateReportImage">生成图片</van-button>
       </view>
     </view>
 
     <view wx:if="{{activeProfileTab === 'presets'}}" class="tool-panel">
       <view class="panel-title-row">
-        <view>
-          <text class="panel-title">班次管理</text>
+        <view class="card-title">
+          <van-icon name="setting-o" size="30rpx" color="var(--app-primary)"></van-icon>
+          <text>班次管理</text>
         </view>
-        <van-icon name="setting-o" size="38rpx" color="#167a61"></van-icon>
+        <van-tag plain round type="primary">{{presets.length}} 个</van-tag>
       </view>
 
-      <picker wx:if="{{presets.length}}" mode="selector" range="{{presetOptions}}" value="{{selectedPresetIndex}}" bindchange="onManagedPresetPickerChange">
-        <view class="select-box {{selectedPresetId ? 'is-active' : ''}}">
-          <text>{{selectedPresetId ? selectedPresetLabel : '点击选择班次'}}</text>
+      <scroll-view wx:if="{{presets.length}}" class="preset-list {{presets.length > 4 ? 'is-scroll' : ''}}" scroll-y="{{presets.length > 4}}" enhanced="{{true}}" show-scrollbar="{{false}}">
+        <view
+          wx:for="{{presets}}"
+          wx:key="id"
+          class="preset-row {{isPresetEditorVisible && editingPresetId === item.id ? 'is-editing' : ''}}"
+        >
+          <view class="preset-row-main">
+            <text class="preset-row-time">{{item.start}}-{{item.end}}</text>
+            <text class="preset-row-note">{{item.deductBreak ? '扣休0.5h' : '不扣休'}}</text>
+          </view>
+          <button class="icon-button" hover-class="chip-pressed" data-id="{{item.id}}" bindtap="editPreset">
+            <van-icon name="edit" size="32rpx"></van-icon>
+          </button>
+          <button class="icon-button is-danger" hover-class="chip-pressed" data-id="{{item.id}}" bindtap="deletePreset">
+            <van-icon name="delete-o" size="32rpx"></van-icon>
+          </button>
         </view>
-      </picker>
+      </scroll-view>
 
-      <view wx:else class="empty-wrap">
-        <van-empty image="search" description="暂无班次"></van-empty>
+      <view wx:else class="empty-tip">
+        <text>暂无班次，点击下方按钮添加</text>
       </view>
 
-      <view wx:if="{{selectedPresetId}}" class="preset-actions">
-        <van-button custom-class="preset-action-button" type="default" plain round bind:click="editSelectedPreset">修改</van-button>
-        <van-button custom-class="preset-action-button" type="primary" round bind:click="savePreset">保存</van-button>
-        <van-button custom-class="preset-action-button" type="danger" plain round bind:click="deletePreset">删除</van-button>
-      </view>
+      <van-button
+        wx:if="{{!isPresetEditorVisible}}"
+        custom-class="full-button"
+        block
+        round
+        plain
+        type="primary"
+        icon="plus"
+        bind:click="startAddPreset"
+      >新增班次</van-button>
 
-      <van-button custom-class="full-button add-button" block round plain type="primary" icon="plus" bind:click="startAddPreset">新增班次</van-button>
-
-      <view wx:if="{{isPresetEditorVisible}}" class="preset-form">
+      <view wx:if="{{isPresetEditorVisible}}" class="preset-editor">
+        <text class="editor-title">{{isAddingPreset ? '新增班次' : '编辑班次'}}</text>
         <view class="time-grid">
           <picker mode="multiSelector" range="{{timePickerRange}}" value="{{presetStartTimePickerValue}}" bindchange="onPresetStartChange">
-            <van-cell custom-class="time-field" title="上班" value="{{presetForm.start}}" icon="clock-o" is-link border="{{false}}"></van-cell>
+            <view class="time-block" hover-class="chip-pressed">
+              <text class="time-block-value">{{presetForm.start}}</text>
+            </view>
           </picker>
+          <view class="time-arrow">
+            <van-icon name="arrow" size="28rpx" color="var(--app-text-soft)"></van-icon>
+          </view>
           <picker mode="multiSelector" range="{{timePickerRange}}" value="{{presetEndTimePickerValue}}" bindchange="onPresetEndChange">
-            <van-cell custom-class="time-field" title="下班" value="{{presetForm.end}}" icon="clock-o" is-link border="{{false}}"></van-cell>
+            <view class="time-block" hover-class="chip-pressed">
+              <text class="time-block-value">{{presetForm.end}}</text>
+            </view>
           </picker>
         </view>
         <view class="switch-line">
-          <view>
-            <text class="switch-title">扣休0.5h</text>
-          </view>
-          <van-switch checked="{{presetForm.deductBreak}}" active-color="#167a61" size="44rpx" bind:change="onPresetBreakChange"></van-switch>
+          <text class="switch-title">扣休0.5h</text>
+          <van-switch checked="{{presetForm.deductBreak}}" size="44rpx" bind:change="onPresetBreakChange"></van-switch>
         </view>
-      </view>
-
-      <view wx:if="{{isAddingPreset}}" class="preset-actions">
-        <van-button custom-class="preset-action-button" type="primary" round bind:click="savePreset">保存</van-button>
-        <van-button custom-class="preset-action-button" type="default" plain round bind:click="cancelPresetEdit">取消</van-button>
+        <view class="editor-actions">
+          <van-button custom-class="editor-cancel" type="default" plain round bind:click="cancelPresetEdit">取消</van-button>
+          <van-button custom-class="editor-save" type="primary" round bind:click="savePreset">保存</van-button>
+        </view>
       </view>
     </view>
 
     <view wx:if="{{activeProfileTab === 'balance'}}" class="tool-panel">
       <view class="panel-title-row">
-        <view>
-          <text class="panel-title">结余设置</text>
+        <view class="card-title">
+          <van-icon name="balance-list-o" size="30rpx" color="var(--app-primary)"></van-icon>
+          <text>结余设置</text>
         </view>
-        <van-icon name="balance-list-o" size="38rpx" color="#167a61"></van-icon>
       </view>
 
       <picker class="balance-month-picker" mode="date" fields="month" value="{{balanceMonthKey}}" bindchange="onBalanceMonthChange">
-        <van-cell custom-class="range-field balance-month-field" title="月份" value="{{balanceMonthLabel}}" icon="calendar-o" is-link border="{{false}}"></van-cell>
+        <view class="month-capsule" hover-class="chip-pressed">
+          <van-icon name="calendar-o" size="30rpx" color="var(--app-primary)"></van-icon>
+          <text class="month-capsule-text">{{balanceMonthLabel}}</text>
+          <van-icon name="arrow-down" size="22rpx" color="var(--app-text-soft)"></van-icon>
+        </view>
       </picker>
 
       <view class="balance-card">
-        <text class="balance-card-label">当前本月结余</text>
+        <text class="balance-card-label">当前月末结余</text>
         <text class="balance-card-value">{{balanceClosingText}}h</text>
       </view>
 
-      <van-field
-        custom-class="balance-field"
-        value="{{balanceInput}}"
-        placeholder="本月结余（小时）"
-        clearable
-        border="{{false}}"
-        extra-event-params="{{true}}"
-        bind:input="onBalanceInput"
-      ></van-field>
-
-      <view class="action-row">
-        <van-button type="primary" round icon="success" bind:click="saveOpeningBalanceSetting">保存结余</van-button>
+      <view class="stepper-row">
+        <button class="stepper-button" hover-class="chip-pressed" data-step="-0.5" bindtap="stepBalanceInput">
+          <van-icon name="minus" size="28rpx"></van-icon>
+        </button>
+        <input class="stepper-input" type="digit" value="{{balanceInput}}" bindinput="onBalanceInput" />
+        <button class="stepper-button" hover-class="chip-pressed" data-step="0.5" bindtap="stepBalanceInput">
+          <van-icon name="plus" size="28rpx"></van-icon>
+        </button>
       </view>
+      <text class="stepper-hint">直接输入或按 0.5h 步进调整目标结余</text>
+
+      <van-button custom-class="full-button" block type="primary" round icon="success" bind:click="saveOpeningBalanceSetting">保存结余</van-button>
     </view>
 
     <view wx:if="{{activeProfileTab === 'backup'}}" class="tool-panel">
       <view class="panel-title-row">
-        <view>
-          <text class="panel-title">备份恢复</text>
+        <view class="card-title">
+          <van-icon name="share-o" size="30rpx" color="var(--app-primary)"></van-icon>
+          <text>备份恢复</text>
         </view>
-        <van-tag plain round type="primary">JSON</van-tag>
+        <van-tag plain round type="primary">{{remoteBackups.length}}/5</van-tag>
       </view>
 
-      <view class="action-row">
-        <van-button type="primary" round icon="share-o" bind:click="exportBackupFile">导出并发送</van-button>
-        <van-button type="default" plain round icon="upgrade" bind:click="chooseImportFile">从文件导入</van-button>
+      <view class="backup-status">
+        <view class="backup-status-icon">
+          <van-icon name="underway-o" size="36rpx"></van-icon>
+        </view>
+        <view class="backup-status-copy">
+          <text class="backup-status-title">远端备份</text>
+          <text class="backup-status-sub">{{remoteBackupStatusText}}</text>
+        </view>
+        <button class="icon-button" hover-class="chip-pressed" bindtap="loadRemoteBackups">
+          <van-icon name="replay" size="30rpx"></van-icon>
+        </button>
       </view>
 
-      <view wx:if="{{pendingImportPreview}}" class="import-preview">
-        <text class="preview-title">{{pendingImportFileName}}</text>
-        <view class="preview-row">
-          <van-tag plain type="primary">月 {{pendingImportPreview.monthCount}}</van-tag>
-          <van-tag plain type="success">记 {{pendingImportPreview.recordCount}}</van-tag>
-          <van-tag plain type="warning">班 {{pendingImportPreview.presetCount}}</van-tag>
+      <view wx:if="{{remoteBackupState === 'conflict'}}" class="remote-conflict">
+        <text class="remote-conflict-title">检测到多端数据冲突</text>
+        <text class="remote-conflict-desc">{{remoteBackupStatusText}}</text>
+        <view class="conflict-actions">
+          <van-button size="small" type="danger" round loading="{{isRemoteBackupLoading}}" bind:click="resolveRemoteConflict">解决冲突</van-button>
         </view>
-        <text wx:if="{{pendingImportPreview.exportedAt}}" class="preview-line">{{pendingImportPreview.exportedAt}}</text>
-        <view class="action-row">
-          <van-button type="danger" round bind:click="confirmImport">覆盖</van-button>
-          <van-button type="default" plain round bind:click="cancelImport">取消</van-button>
+      </view>
+
+      <van-button
+        custom-class="full-button"
+        block
+        type="primary"
+        round
+        icon="replay"
+        loading="{{isRemoteBackupLoading}}"
+        bind:click="syncRemoteBackupNow"
+      >立即同步</van-button>
+
+      <view wx:if="{{remoteBackups.length}}" class="remote-backup-list">
+        <view wx:for="{{remoteBackups}}" wx:key="fileName" class="remote-backup-item">
+          <view class="remote-backup-main">
+            <text class="remote-backup-time">{{item.createdAtText}}</text>
+          </view>
+          <van-button size="small" type="primary" plain round data-file="{{item.fileName}}" data-time="{{item.createdAtText}}" bind:click="restoreRemoteBackup">恢复</van-button>
         </view>
+      </view>
+
+      <view wx:else class="empty-tip">
+        <text>暂无远端备份</text>
       </view>
     </view>
-  </scroll-view>
+  </view>
+
+  <view class="profile-footer">
+    <text class="icp-link">{{icpNumber}}</text>
+    <text class="footer-separator">·</text>
+    <text>v{{appVersion}}</text>
+  </view>
 
   <canvas type="2d" id="reportCanvas" class="report-canvas" style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"></canvas>
 </view>

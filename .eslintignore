@@ -1,0 +1,7 @@
+**/.git
+**/node_modules
+**/miniprogram_npm
+**/*.min.js
+project.config.json
+project.private.config.json
+sitemap.json

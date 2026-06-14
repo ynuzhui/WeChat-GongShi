@@ -1,11 +1,7 @@
 {
   "navigationBarTitleText": "管理",
-  "disableScroll": true,
   "usingComponents": {
     "van-button": "@vant/weapp/button/index",
-    "van-cell": "@vant/weapp/cell/index",
-    "van-empty": "@vant/weapp/empty/index",
-    "van-field": "@vant/weapp/field/index",
     "van-icon": "@vant/weapp/icon/index",
     "van-switch": "@vant/weapp/switch/index",
     "van-tag": "@vant/weapp/tag/index"
